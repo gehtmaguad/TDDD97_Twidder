@@ -1,0 +1,78 @@
+// Create Dabatase from schema
+sqlite3 twidder.db < twidder.schema
+
+// server.py line number 51 (static token) needs to be replaced by
+// line number 52 (random token) after static telnet tests succeeded
+
+// Telnet HTTP Post Request SIGNIN
+POST /signin/ HTTP/1.1
+Host: 127.0.0.1 
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 41
+
+email=spohie%40test.com&password=test1234
+
+// Telnet HTTP Post Request SIGNUP
+POST /signup/ HTTP/1.1
+Host: 127.0.0.1 
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 111
+
+email=user5%40test.com&password=test1234&firstname=user1&familyname=doe&gender=male&city=vienna&country=austria
+
+// Telnet HTTP Post Request SIGNOUT
+POST /signout/ HTTP/1.1
+Host: 127.0.0.1 
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 17
+
+token=ABCDEFG1234
+
+// Telnet HTTP Post Request RESET PASSWORD
+POST /changepassword/ HTTP/1.1
+Host: 127.0.0.1 
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 59
+
+token=ABCDEFG1234&oldPassword=test1234&newPassword=1234test
+
+// Telnet HTTP Post Request GET USER DATA BY TOKEN
+POST /getuserdatabytoken/ HTTP/1.1
+Host: 127.0.0.1 
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 17
+
+token=ABCDEFG1234
+
+// Telnet HTTP Post Request GET USER DATA BY EMAIL
+POST /getuserdatabyemail/ HTTP/1.1
+Host: 127.0.0.1 
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 37
+
+email=foo%40bar.com&token=ABCDEFG1234
+
+// Telnet HTTP Post Request POST MESSAGE TO WALL
+POST /postmessage/ HTTP/1.1
+Host: 127.0.0.1 
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 71
+
+receiverEmail=spohie%40test.com&token=ABCDEFG1234&message=dasisteintesT
+
+// Telnet HTTP Post Request GET MESSAGES FROM WALL BY TOKEN
+POST /getusermessagesbytoken/ HTTP/1.1
+Host: 127.0.0.1
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 17
+
+token=ABCDEFG1234
+
+// Telnet HTTP Post Request GET MESSAGES FROM WALL BY EMAIL
+POST /getusermessagesbyemail/ HTTP/1.1
+Host: 127.0.0.1
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 37
+
+token=ABCDEFG1234&email=foo%40bar.com
+

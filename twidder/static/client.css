@@ -1,0 +1,183 @@
+body {
+    background-color: #58D3F7;
+}
+
+#main_container {
+    width: 600px;
+    height: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+    background-color: #FFFFFF;
+}
+
+#logo_and_slogan {
+    width: 340px;
+    height: 400px;
+    border-right: 10px solid #58D3F7;
+    float:left;
+}
+
+#login {
+    width: 250px;
+    height: 90px;
+    float:right;
+    border-bottom: 10px solid #58D3F7;
+}
+
+#signup {
+    width: 250px;
+    height: 300px;
+    float:right;
+}
+
+#signUpH1 {
+    margin: 15px;
+}
+
+.valErrMsg {
+    color: red;
+}
+
+.valSucMsg {
+    color: green;
+}
+
+label{
+    float: left;
+}
+
+input {
+    float: right;
+}
+
+select {
+    float:right;
+}
+
+div.formfield {
+    display: block;
+    margin-top: 5px;
+}
+
+#profile_container {
+    width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 100px;
+    background-color: #FFFFFF;
+}
+
+#tabular_bar {
+    text-align: center;
+    padding: 10px;
+    border-bottom: 10px solid #58D3F7;
+}
+
+#home {
+    display: block;
+}
+
+#homePersonalInfo {
+    width: 290px;
+    height: 300px;
+    float:left;
+    padding-left: 20px;
+}
+
+#homePostArea {
+    width: 250px;
+    height: 175px;
+    float:right;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#homeMessageArea {
+    padding-left: 20px;
+}
+
+#homeRefreshArea {
+    width: 250px;
+    height: 125px;
+    float:right;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#browse {
+    display: none;
+}
+
+#account {
+    display: none;
+}
+
+#browseContent {
+    display: none;
+}
+
+.messageTextArea {
+    float:right;
+}
+
+.messageSubmitField {
+    clear:both;
+}
+
+div.personalInfoKey {
+    display: inline-block;
+}
+
+div.personalInfoValue {
+    display: inline-block;
+}
+
+p.noBoarder {
+   margin: 5px;
+   padding: 0;
+}
+
+#browseSearchArea {
+    padding-left: 150px;
+    padding-right: 150px;
+    height:100px;
+}
+
+#browsePersonalInfo {
+    width: 290px;
+    height: 300px;
+    float:left;
+    padding-left: 20px;
+}
+
+#browsePostArea {
+    width: 250px;
+    height: 175px;
+    float:right;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#browseMessageArea {
+    padding-left: 20px;
+}
+
+#browseRefreshArea {
+    width: 250px;
+    height: 125px;
+    float:right;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#changePasswordArea {
+    padding-left: 100px;
+    padding-right: 100px;
+}
+
+#signOutArea {
+    padding-left: 100px;
+    padding-right: 100px;
+    height: 100px;
+}
