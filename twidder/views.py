@@ -23,8 +23,8 @@ def teardown_request(exception):
   database_helper.close_db()
 
 @app.route('/')
-def hello():
-  return "Hello World! "
+def root():
+  return app.send_static_file('client.html')
 
 # Signin User based on email and password
 @app.route('/signin/', methods=['POST'])
