@@ -1,7 +1,7 @@
 import sqlite3
 from flask import g
 
-DATABASE = '/home/markus/TDDD97/twidder.db'
+DATABASE = './twidder/database.db'
 
 def connect_db():
   return sqlite3.connect(DATABASE)

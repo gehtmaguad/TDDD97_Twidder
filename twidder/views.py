@@ -10,8 +10,6 @@ import random
 logged_in_users = []
 password_length = 8
 
-DATABASE = '/home/markus/TDDD97/twidder.db'
-
 @app.before_request
 def before_request():
   print "BEFORE REQUEST"
