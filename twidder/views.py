@@ -72,13 +72,13 @@ def sign_in():
 def sign_up():
 
   # Get data from form
-  email = request.form['email']
-  password = request.form['password']
-  firstname = request.form['firstname']
-  familyname = request.form['familyname']
-  gender = request.form['gender']
-  city = request.form['city']
-  country = request.form['country']
+  email = request.json['email']
+  password = request.json['password']
+  firstname = request.json['firstname']
+  familyname = request.json['familyname']
+  gender = request.json['gender']
+  city = request.json['city']
+  country = request.json['country']
 
   # Create empty dictionary for storing return data
   data = {}
@@ -115,7 +115,7 @@ def sign_up():
 def sign_out():
 
   # Get token from form
-  token = request.form['token']
+  token = request.json['token']
 
   # Create empty dictionary for storing return data
   data = {}
@@ -142,9 +142,9 @@ def sign_out():
 def change_password():
 
   # Get data from form
-  token = request.form['token']
-  old_password = request.form['oldPassword']
-  new_password = request.form['newPassword']
+  token = request.json['token']
+  old_password = request.json['oldPassword']
+  new_password = request.json['newPassword']
 
   # Create empty dictionary for storing return data
   data = {}
@@ -195,7 +195,7 @@ def change_password():
 def get_user_data_by_token():
 
   # Get token from form
-  token = request.form['token']
+  token = request.json['token']
 
   # Create empty dictionary for storing return data
   data = {}
@@ -230,8 +230,8 @@ def get_user_data_by_token():
 def get_user_data_by_email():
 
   # Get token and email from form
-  token = request.form['token']
-  email = request.form['email']
+  token = request.json['token']
+  email = request.json['email']
   
   # Create empty dictionary for storing return data
   data = {}
@@ -266,9 +266,9 @@ def get_user_data_by_email():
 def post_message():
 
   # Get data from form
-  token = request.form['token']
-  receiver_email = request.form['receiverEmail']
-  message = request.form['message']
+  token = request.json['token']
+  receiver_email = request.json['receiverEmail']
+  message = request.json['message']
 
   # Create empty dictionary for storing return data
   data = {}
@@ -307,7 +307,7 @@ def post_message():
 def get_user_messages_by_token():
 
   # Get token from form
-  token = request.form['token']
+  token = request.json['token']
 
   # Create empty dictionary for storing return data
   data = {}
@@ -348,8 +348,8 @@ def get_user_messages_by_token():
 def get_user_messages_by_email():
 
   # Get data from form
-  token = request.form['token']
-  email = request.form['email']
+  token = request.json['token']
+  email = request.json['email']
 
   # Create empty dictionary for storing return data
   data = {}

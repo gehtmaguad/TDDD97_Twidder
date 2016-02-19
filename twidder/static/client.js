@@ -44,7 +44,7 @@ function signUpUser() {
     }
 
     // Get Form Values and create formData Object
-    var formData = {
+    var userdata = {
         email:document.forms['signupForm']['email'].value,
         password:document.forms['signupForm']['password'].value,
         firstname:document.forms['signupForm']['firstName'].value,
@@ -54,22 +54,52 @@ function signUpUser() {
         country:document.forms['signupForm']['country'].value
     };
 
-    // SignUp User
-    var signUp = serverstub.signUp(formData);
-    if (signUp.success === false) {
-        document.getElementById('valErrMsgSignupForm').innerHTML = signUp.message;
-        return false;
-    }
+    // SignUp and SignIn User
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/signup/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
 
-    // SignIn User
-    var signIn = serverstub.signIn(username, password);
-    if (signIn.success === false) {
-        document.getElementById('valErrMsgSigninForm').innerHTML = signIn.message;
-        return false;
-    } else {
-        localStorage.setItem("token", signIn.data);
-        profileView();
-    }
+          // SignIn User
+          var con2 = new XMLHttpRequest(); // Create XMLHttpRequest Object
+          con2.open("POST", '/signin/', true); // Create asynchronous Post Request to Server Resource
+          // Specify a function which is executed each time the readyState property changes
+          con2.onreadystatechange = function() {
+            // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+            if (con2.readyState == 4 && con2.status == 200) {
+              // Parse the JSON response from the server
+              var serverResponse2 = JSON.parse(con2.responseText);
+              // Check response status
+              if (serverResponse2.success === true) {
+                // Set Session Token
+                localStorage.setItem("token", serverResponse2.data);
+                // Redirect User to profileView
+                profileView();
+              } else {
+                // inject error message into html
+                document.getElementById('valErrMsgSigninForm').innerHTML = serverResponse2.message;
+              }
+            }
+          };
+          con2.setRequestHeader("Content-Type", "application/json");
+          // Send JSON data to Server
+          con2.send(JSON.stringify(userdata));
+
+        } else {
+          // inject error message into html
+          document.getElementById('valErrMsgSignupForm').innerHTML = signUp.message;
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
 
     return false;
 }
@@ -105,7 +135,7 @@ function signInUser() {
           // Redirect User to profileView
           profileView();
         } else {
-          // Display error message
+          // inject error message into html
           document.getElementById('valErrMsgSigninForm').innerHTML = serverResponse.message;
         }
       }
@@ -129,11 +159,6 @@ function getTokenOrNull() {
 /* resetPassword() sets a new password or error in html field is set  */
 function resetPassword() {
 
-    // Get Password Form Values
-    var oldPassword = document.forms['renewPwdForm']['oldPassword'].value;
-    var newPassword = document.forms['renewPwdForm']['newPassword'].value;
-    var repeatNewPsw = document.forms['renewPwdForm']['repeatNewPsw'].value;
-
     // Get Token. If Token is not available redirect user to welcomeView.
     var token = getTokenOrNull();
     if (token === null) {
@@ -141,26 +166,46 @@ function resetPassword() {
         return false;
     }
 
+    // Get Password Form Values and create javascript object
+    userdata = {
+      oldPassword:document.forms['renewPwdForm']['oldPassword'].value,
+      newPassword:document.forms['renewPwdForm']['newPassword'].value,
+      repeatNewPsw:document.forms['renewPwdForm']['repeatNewPsw'].value,
+      token:token
+    }
+
     // Check Password Length
-    if (checkPwdLength(newPassword) === false) {
+    if (checkPwdLength(userdata.newPassword) === false) {
         document.getElementById('valErrMsgRenewPwdForm').innerHTML = "PWD requires >= 8 chars";
         return false;
     }
 
     // Compare Password Fields
-    if (comparePwd(newPassword, repeatNewPsw) === false) {
+    if (comparePwd(userdata.newPassword, userdata.repeatNewPsw) === false) {
         document.getElementById('valErrMsgRenewPwdForm').innerHTML = "Same PWD required";
         return false;
     }
 
     // Renew password
-    var result = serverstub.changePassword(token, oldPassword, newPassword);
-    if ( result.success === false) {
-        document.getElementById('valErrMsgRenewPwdForm').innerHTML = result.message;
-        return false;
-    } else {
-        document.getElementById('valSucMsgRenewPwdForm').innerHTML = "Password changed!";
-    }
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/changepassword/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
+          document.getElementById('valSucMsgRenewPwdForm').innerHTML = "Password changed!";
+        } else {
+          document.getElementById('valErrMsgRenewPwdForm').innerHTML = result.message;
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
 
     return false;
 }
@@ -230,17 +275,34 @@ function signOut() {
         return false;
     }
 
-    // sign out user
-    var result = serverstub.signOut(token);
-    if ( result.success === false) {
-        document.getElementById('valErrMsgRenewPwdForm').innerHTML = result.message;
-        return false;
-    } else {
-        // delete localStorage objects
-        cleanLocalStorage();
-        // redurect user to welcomeView
-        welcomeView();
+    var userdata = {
+      token:token
     }
+
+    // SignOut User
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/signout/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
+          // delete localStorage objects
+          cleanLocalStorage();
+          // redurect user to welcomeView
+          welcomeView();
+        } else {
+          // inject error message into html
+          document.getElementById('valErrMsgRenewPwdForm').innerHTML = serverResponse.message;
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
 
     return false;
 }
@@ -291,16 +353,34 @@ function injectHomeUserData() {
         return false;
     }
 
-    // Get UserData from Server
-    var userdata = serverstub.getUserDataByToken(token);
+    var userdata = {token:token}
 
-    // Inject the userdata into html
-    document.getElementById("homeFirstname").innerHTML = userdata.data.firstname;
-    document.getElementById("homeFamilyname").innerHTML = userdata.data.familyname;
-    document.getElementById("homeGender").innerHTML = userdata.data.gender;
-    document.getElementById("homeCity").innerHTML = userdata.data.city;
-    document.getElementById("homeCountry").innerHTML = userdata.data.country;
-    document.getElementById("homeEmail").innerHTML = userdata.data.email;
+    // Get UserData from Server
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/getuserdatabytoken/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
+          // Inject the userdata into html
+          document.getElementById("homeFirstname").innerHTML = serverResponse.data.firstname;
+          document.getElementById("homeFamilyname").innerHTML = serverResponse.data.familyname;
+          document.getElementById("homeGender").innerHTML = serverResponse.data.gender;
+          document.getElementById("homeCity").innerHTML = serverResponse.data.city;
+          document.getElementById("homeCountry").innerHTML = serverResponse.data.country;
+          document.getElementById("homeEmail").innerHTML = serverResponse.data.email;
+        } else {
+          document.getElementById('valErrMsgHomePostAreaForm').innerHTML = serverResponse.message;
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
 
     return false;
 }
