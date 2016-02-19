@@ -29,8 +29,8 @@ def root():
 def sign_in():
 
   # Get email and password from form
-  email = request.form['email']
-  password = request.form['password']
+  email = request.json['email']
+  password = request.json['password']
 
   # Create empty dictionary for storing return data
   data = {}

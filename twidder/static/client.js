@@ -77,25 +77,42 @@ function signUpUser() {
 /* signInUser() user is signedin or error in html field is set */
 function signInUser() {
 
-    // Get Password Form Values
-    var username = document.forms['signinForm']['loginEmail'].value;
-    var password = document.forms['signinForm']['loginPassword'].value;
+    // Get Password Form Values and create javascript object
+    var userdata = {
+      email:document.forms['signinForm']['loginEmail'].value,
+      password:document.forms['signinForm']['loginPassword'].value
+    };
 
     // Check Password Length
-    if (checkPwdLength(password) === false) {
+    if (checkPwdLength(userdata.password) === false) {
         document.getElementById('valErrMsgRenewPwdForm').innerHTML = "PWD requires >= 8 chars";
         return false;
     }
 
     // SignIn User
-    var signIn = serverstub.signIn(username, password);
-    if (signIn.success === false) {
-        document.getElementById('valErrMsgSigninForm').innerHTML = signIn.message;
-        return false;
-    } else {
-        localStorage.setItem("token", signIn.data);
-        profileView();
-    }
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/signin/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
+          // Set Session Token
+          localStorage.setItem("token", serverResponse.data);
+          // Redirect User to profileView
+          profileView();
+        } else {
+          // Display error message
+          document.getElementById('valErrMsgSigninForm').innerHTML = serverResponse.message;
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
 
     return false;
 }
