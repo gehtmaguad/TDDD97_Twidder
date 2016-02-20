@@ -1,3 +1,7 @@
+from geventwebsocket.handler import WebSocketHandler
+from gevent import pywsgi
+import gevent
+
 from flask import app, request
 from twidder import app
 
@@ -21,6 +25,20 @@ def teardown_request(exception):
 @app.route('/')
 def root():
   return app.send_static_file('client.html')
+
+@app.route('/wssignin/')
+def wssignin():
+  if request.environ.get('wsgi.websocket'):
+    ws = request.environ['wsgi.websocket']
+    while True:
+      message = ws.receive()
+      message = json.loads(message)
+      print json.dumps(message)
+      print "SENDING MESSAGE"
+      ws.send(json.dumps(message))
+      print "MESSAGE SENT"
+    ws.close()
+  return True
 
 # Signin User based on email and password
 @app.route('/signin/', methods=['POST'])

@@ -134,6 +134,23 @@ function signInUser() {
           localStorage.setItem("token", serverResponse.data);
           // Redirect User to profileView
           profileView();
+
+          // Opening Websocket
+          var websocket = new WebSocket('ws://127.0.0.1:5000/wssignin/', ['soap']);
+          // Sending data to server over websocket
+          websocket.onopen = function (event) {
+            websocket.send(JSON.stringify({test:'test'})); 
+            console.log("send data");
+            console.log(event.data);
+          };
+          // Receiving data from server over websocket
+          websocket.onmessage = function (event) {
+            console.log("received data");
+            console.log(event.data);
+            var msg = JSON.parse(event.data);
+            console.log(msg.test);
+          };
+
         } else {
           // inject error message into html
           document.getElementById('valErrMsgSigninForm').innerHTML = serverResponse.message;
