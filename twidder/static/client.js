@@ -275,6 +275,7 @@ function signOut() {
         return false;
     }
 
+    // Create javascript object
     var userdata = {
       token:token
     }
@@ -328,17 +329,40 @@ function postMessageFromHomeTab() {
     var post = document.forms['homePostAreaForm']['post'].value;
     var toEmail = document.forms['homePostAreaForm']['toEmail'].value;
 
-    // Call Serverside Function
-    var result = serverstub.postMessage(token, post, toEmail);
-    if (result.success === false) {
-        document.getElementById('valErrMsgHomePostAreaForm').innerHTML = result.message;
-        return false;
-    } else {
-        document.forms['homePostAreaForm']['post'].value = " ";
-        document.forms['homePostAreaForm']['toEmail'].value = " ";
-        document.getElementById('valSucMsgHomePostAreaForm').innerHTML = "Message posted!";
-        injectHomePosts();
+    // Create javascript object
+    userdata = {
+      token:token,
+      message:post,
+      receiverEmail:toEmail
     }
+
+    // Get UserData from Server
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/postmessage/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
+          // Inject data into html
+          document.getElementById('valSucMsgHomePostAreaForm').innerHTML = "Message posted!";
+          // Clear Form
+          document.forms['homePostAreaForm']['post'].value = " ";
+          document.forms['homePostAreaForm']['toEmail'].value = " ";
+          // Get Posts in order to show newly created posts
+          injectHomePosts();
+        } else {
+          // inject error message into html
+          document.getElementById('valErrMsgHomePostAreaForm').innerHTML = serverResponse.message;
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
 
     return false;
 }
@@ -353,6 +377,7 @@ function injectHomeUserData() {
         return false;
     }
 
+    // Create javascript object
     var userdata = {token:token}
 
     // Get UserData from Server
@@ -374,6 +399,7 @@ function injectHomeUserData() {
           document.getElementById("homeCountry").innerHTML = serverResponse.data.country;
           document.getElementById("homeEmail").innerHTML = serverResponse.data.email;
         } else {
+          // inject error message into html
           document.getElementById('valErrMsgHomePostAreaForm').innerHTML = serverResponse.message;
         }
       }
@@ -395,27 +421,43 @@ function injectHomePosts() {
         return false;
     }
 
-    // Get Posts from Server
-    var posts = serverstub.getUserMessagesByToken(token);
-    if ( posts.success === false ) {
-        return false;
-    }
+    var userdata = {token:token}
 
-    // Remove current posts from html
-    var element = document.getElementById('homeMessageWall');
-    while (element.firstChild) {
-        element.removeChild(element.firstChild);
-    }
+    // Get UserData from Server
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/getusermessagesbytoken/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
+          // Remove current posts from html
+          var element = document.getElementById('homeMessageWall');
+          while (element.firstChild) {
+            element.removeChild(element.firstChild);
+          }
 
-    // Injects retrieved posts into html
-    posts.data.forEach( function (arrayItem)
-    {
-        var para = document.createElement("p");
-        var text = document.createTextNode("Writer: " + arrayItem.writer + " Content: " + arrayItem.content);
-        para.appendChild(text);
+          // Injects retrieved posts into html
+          serverResponse.data.forEach( function (arrayItem)
+          {
+            var para = document.createElement("p");
+            var text = document.createTextNode(arrayItem.sender_email + ": " + arrayItem.message);
+            para.appendChild(text);
+            element.appendChild(para);
+          });
+        } else {
+          //TODO: Else
+          var dummy = "dummy";
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
 
-        element.appendChild(para);
-    });
 }
 
 /* displayUser() Display another User  */
@@ -442,21 +484,43 @@ function postMessageFromBrowseTab() {
         welcomeView();
         return false;
     }
-
     // Get Data
     var post = document.forms['browsePostAreaForm']['post'].value;
     var toEmail = localStorage.getItem('toEmail');
 
-    // Call Serverside Function
-    var result = serverstub.postMessage(token, post, toEmail);
-    if (result.success === false) {
-        document.getElementById('valErrMsgBrowsePostAreaForm').innerHTML = result.message;
-        return false;
-    } else {
-        document.getElementById('valSucMsgBrowsePostAreaForm').innerHTML = "Message posted!";
-        injectBrowsePosts();
-        document.forms['browsePostAreaForm']['post'].value = " ";
+    // Create javascript object
+    var userdata = {
+      token:token,
+      message:post,
+      receiverEmail:toEmail
     }
+
+    // Get UserData from Server
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/postmessage/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
+          // Inject data into html
+          document.getElementById('valSucMsgBrowsePostAreaForm').innerHTML = "Message posted!";
+          // Clear form
+          document.forms['browsePostAreaForm']['post'].value = " ";
+          // Get Posts in order to show newly created posts
+          injectBrowsePosts();
+        } else {
+          // inject error message into html
+          document.getElementById('valErrMsgBrowsePostAreaForm').innerHTML = serverResponse.message;
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
 
     return false;
 }
@@ -474,20 +538,38 @@ function injectBrowseUserData(userdata) {
     // Get Email from LocalStorage
     var email = localStorage.getItem('toEmail');
 
-    // Retrieve data from server
-    var userdata = serverstub.getUserDataByEmail(token,email);
-    if (userdata.success === false) {
-        document.getElementById('valErrMsgSearchUserForm').innerHTML = "Email " + email + " is unknown";
-        return false;
+    // Create javascript object
+    var userdata = {
+      token:token,
+      email:email
     }
 
-    // Inject the userdata into html
-    document.getElementById("browseFirstname").innerHTML = userdata.data.firstname;
-    document.getElementById("browseFamilyname").innerHTML = userdata.data.familyname;
-    document.getElementById("browseGender").innerHTML = userdata.data.gender;
-    document.getElementById("browseCity").innerHTML = userdata.data.city;
-    document.getElementById("browseCountry").innerHTML = userdata.data.country;
-    document.getElementById("browseEmail").innerHTML = userdata.data.email;
+    // Get UserData from Server
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/getuserdatabyemail/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
+          // Inject the userdata into html
+          document.getElementById("browseFirstname").innerHTML = serverResponse.data.firstname;
+          document.getElementById("browseFamilyname").innerHTML = serverResponse.data.familyname;
+          document.getElementById("browseGender").innerHTML = serverResponse.data.gender;
+          document.getElementById("browseCity").innerHTML = serverResponse.data.city;
+          document.getElementById("browseCountry").innerHTML = serverResponse.data.country;
+          document.getElementById("browseEmail").innerHTML = serverResponse.data.email;
+        } else {
+          document.getElementById('valErrMsgSearchUserForm').innerHTML = "Email " + email + " is unknown";
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
 
     return false;
 }
@@ -505,26 +587,47 @@ function injectBrowsePosts() {
     // Get Email from LocalStorage
     var email = localStorage.getItem('toEmail');
 
-    // Get Posts from Server
-    var posts = serverstub.getUserMessagesByEmail(token,email);
-    if (posts.success === false) {
-        document.getElementById('valErrMsgSearchUserForm').innerHTML = "Could not retrieve posts from " + email;
-        return false;
+    var userdata = {
+      token:token,
+      email:email
     }
 
-    // Remove current posts from html
-    var element = document.getElementById('browseMessageWall');
-    while (element.firstChild) {
-        element.removeChild(element.firstChild);
-    }
+    // Get UserData from Server
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/getusermessagesbyemail/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
 
-    // Injects retrieved posts into html
-    posts.data.forEach( function (arrayItem)
-    {
-        var para = document.createElement("p");
-        var text = document.createTextNode("Writer: " + arrayItem.writer + " Content: " + arrayItem.content);
-        para.appendChild(text);
+          // Remove current posts from html
+          var element = document.getElementById('browseMessageWall');
+          while (element.firstChild) {
+              element.removeChild(element.firstChild);
+          }
 
-        element.appendChild(para);
-    });
+          // Injects retrieved posts into html
+          serverResponse.data.forEach( function (arrayItem)
+          {
+            var para = document.createElement("p");
+            var text = document.createTextNode(arrayItem.sender_email + ": " + arrayItem.message);
+            para.appendChild(text);
+
+            element.appendChild(para);
+          });
+
+        } else {
+          document.getElementById('valErrMsgSearchUserForm').innerHTML = "Could not retrieve posts from " + email;
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
+
+    return false;
 }
