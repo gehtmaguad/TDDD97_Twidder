@@ -1,3 +1,9 @@
+// Install gevent and gevent-websocket
+In order to install gevent the python-dev packages must be installed
+sudo apt-get install python-dev
+pip install gevent
+pip install gevent-websocket
+
 // Create Dabatase from schema
 sqlite3 twidder.db < twidder.schema
 

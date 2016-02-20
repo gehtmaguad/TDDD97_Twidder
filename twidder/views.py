@@ -12,12 +12,10 @@ password_length = 8
 
 @app.before_request
 def before_request():
-  print "BEFORE REQUEST"
   database_helper.connect_db()
 
 @app.teardown_request
 def teardown_request(exception):
-  print "TEARDOWN REQUEST"
   database_helper.close_db()
 
 @app.route('/')
@@ -429,6 +427,3 @@ def get_user_data(email):
     user['city'] = result[6]
     user['country'] = result[7]
     return user
-
-if __name__ == "__main__":
-	app.run()
