@@ -11,6 +11,9 @@ import json
 import string
 import random
 
+#TODO: TEMP
+import time
+
 logged_in_users = []
 password_length = 8
 
@@ -26,17 +29,39 @@ def teardown_request(exception):
 def root():
   return app.send_static_file('client.html')
 
-@app.route('/wssignin/')
+@app.route('/websocket/')
 def wssignin():
+  print "HELLO IN WEBSOCKET"
   if request.environ.get('wsgi.websocket'):
     ws = request.environ['wsgi.websocket']
     while True:
-      message = ws.receive()
-      message = json.loads(message)
-      print json.dumps(message)
-      print "SENDING MESSAGE"
-      ws.send(json.dumps(message))
-      print "MESSAGE SENT"
+      userdata = ws.receive()
+      userdata = json.loads(userdata)
+      email = userdata['email']
+
+      if is_logged_in_by_email(email):
+        print "User already logged in"
+        print "Get Session"
+        user = get_user_by_email(email) 
+        print "USER"
+        print user
+        print 'session' in user
+        if 'session' in user:
+          print "IN SESSION"
+          data = {}
+          data['success'] = True
+          data['message'] = "Sign out"
+          print "USER has KEY ws"
+          old_ws = user['session']
+          # get user
+          old_ws.send(json.dumps(data))
+        print "Store Session"
+        store_websocket(email, ws)
+        data = {}
+        data['success'] = True
+        data['message'] = "Signed in"
+        ws.send(json.dumps(data))
+
     ws.close()
   return True
 
@@ -419,6 +444,14 @@ def is_logged_in(token):
   else:
     return False
 
+# private, check if user is loggedin based on email
+def is_logged_in_by_email(email):
+  global logged_in_users
+  if (any(logged_in_user['email'] == email for logged_in_user in logged_in_users) == True):
+    return True
+  else:
+    return False
+
 # private, remove user from logged in users by token
 def sign_out_user_by_token(token):
   global logged_in_users
@@ -429,6 +462,20 @@ def get_user_by_token(token):
   global logged_in_users
   logged_in_user = [logged_in_user for logged_in_user in logged_in_users if logged_in_user.get('token') == token][0]
   return logged_in_user
+
+# private, return user from logged in users
+def get_user_by_email(email):
+  global logged_in_users
+  logged_in_user = [logged_in_user for logged_in_user in logged_in_users if logged_in_user.get('email') == email][0]
+  return logged_in_user
+
+# private, set websocket session for user
+def store_websocket(email, session):
+  global logged_in_users
+  logged_in_user = [logged_in_user for logged_in_user in logged_in_users if logged_in_user.get('email') == email][0]
+  logged_in_user['session'] = session
+  #TODO: TEMP
+  print logged_in_user
 
 # private, get user data as dictionary
 def get_user_data(email):
