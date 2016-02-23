@@ -136,31 +136,25 @@ function signInUser() {
           profileView();
 
           // Opening Websocket
-          // Chrommium does not work with soap
+          // TODO: Chrommium does not work with soap
           // var websocket = new WebSocket('ws://127.0.0.1:5000/wssignin/', ['soap']);  
           var websocket = new WebSocket('ws://127.0.0.1:5000/websocket/');
           // Sending data to server over websocket
           websocket.onopen = function (event) {
             websocket.send(JSON.stringify(userdata)); 
-            console.log("send data");
           };
           // Receiving data from server over websocket
           websocket.onmessage = function (event) {
-            console.log("received data");
-            console.log(event.data);
             var msg = JSON.parse(event.data);
-            // If already logged in, than log out
+            // Process Message
             if (msg.message === 'Sign out') {
+              //websocket.close()
               signOut();
-              console.log("called signOut() method");
-            } else {
-              console.log("No Handler for event");
             }
           };
           // Error Handling
           websocket.onerror = function (event) {
-            document.getElementById('valErrMsgSigninForm').innerHTML = "Error with WebSocket";
-            console.log(event.data)
+            console.log("Error with Websocket. Data is: " + event.data)
           };
 
         } else {
@@ -294,6 +288,28 @@ function changeActiveProfileViewTab(tab) {
     }
 }
 
+function createXMLHttpRequest(url, userdata, successFunction, errorFunction) {
+  var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+  con.open("POST", url, true); // Create asynchronous Post Request to Server Resource
+  // Specify a function which is executed each time the readyState property changes
+  con.onreadystatechange = function() {
+    // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+    if (con.readyState == 4 && con.status == 200) {
+      // Parse the JSON response from the server
+      var serverResponse = JSON.parse(con.responseText);
+      // Check response status
+      if (serverResponse.success === true) {
+        successFunction();
+      } else {
+        errorFunction();
+      }
+    }
+  };
+  con.setRequestHeader("Content-Type", "application/json");
+  // Send JSON data to Server
+  con.send(JSON.stringify(userdata));
+}
+
 /* signOut user get signed out or error in html field is set */
 function signOut() {
 
@@ -310,29 +326,17 @@ function signOut() {
     }
 
     // SignOut User
-    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-    con.open("POST", '/signout/', true); // Create asynchronous Post Request to Server Resource
-    // Specify a function which is executed each time the readyState property changes
-    con.onreadystatechange = function() {
-      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
-      if (con.readyState == 4 && con.status == 200) {
-        // Parse the JSON response from the server
-        var serverResponse = JSON.parse(con.responseText);
-        // Check response status
-        if (serverResponse.success === true) {
-          // delete localStorage objects
-          cleanLocalStorage();
-          // redurect user to welcomeView
-          welcomeView();
-        } else {
-          // inject error message into html
-          document.getElementById('valErrMsgRenewPwdForm').innerHTML = serverResponse.message;
-        }
-      }
-    };
-    con.setRequestHeader("Content-Type", "application/json");
-    // Send JSON data to Server
-    con.send(JSON.stringify(userdata));
+    var successFunction = function() {
+        // delete localStorage objects
+        cleanLocalStorage();
+        // redurect user to welcomeView
+        welcomeView();
+    }
+    var errorFunction = function() {
+        // inject error message into html
+        document.getElementById('valErrMsgRenewPwdForm').innerHTML = serverResponse.message;
+    }
+    createXMLHttpRequest('/signout/', userdata, successFunction, errorFunction);
 
     return false;
 }
@@ -478,8 +482,7 @@ function injectHomePosts() {
             element.appendChild(para);
           });
         } else {
-          //TODO: Else
-          var dummy = "dummy";
+          document.getElementById('valErrMsgHomePostAreaForm').innerHTML = serverResponse.message;
         }
       }
     };

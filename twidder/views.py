@@ -11,9 +11,6 @@ import json
 import string
 import random
 
-#TODO: TEMP
-import time
-
 logged_in_users = []
 password_length = 8
 
@@ -30,38 +27,38 @@ def root():
   return app.send_static_file('client.html')
 
 @app.route('/websocket/')
-def wssignin():
-  print "HELLO IN WEBSOCKET"
+def websocket():
+  # Create websocket endpoint
   if request.environ.get('wsgi.websocket'):
-    ws = request.environ['wsgi.websocket']
+    # Listen for messages in a loop
     while True:
+      ws = request.environ['wsgi.websocket']
+      # Receive data from the client
       userdata = ws.receive()
-      userdata = json.loads(userdata)
-      email = userdata['email']
-
+      # Parse the data
+      try:
+        json_userdata = json.loads(userdata)
+      except:
+        json_userdata = {}
+        json_userdata['email'] = 'dummy'
+      # Extract email from the data
+      email = json_userdata['email']
+      # Check if the user is logged in
       if is_logged_in_by_email(email):
-        print "User already logged in"
-        print "Get Session"
+        # Get userdata
         user = get_user_by_email(email) 
-        print "USER"
-        print user
-        print 'session' in user
-        if 'session' in user:
-          print "IN SESSION"
+        # Check if the user already has a websocket session
+        if ('websocket' in user and user['websocket'] != ws):
+          # Create data dictionary with return data
           data = {}
           data['success'] = True
           data['message'] = "Sign out"
-          print "USER has KEY ws"
-          old_ws = user['session']
-          # get user
+          # Send data to user in order to sign out on his old websocket session
+          old_ws = user['websocket']
           old_ws.send(json.dumps(data))
-        print "Store Session"
+        # Store newly creeated websocket
         store_websocket(email, ws)
-        data = {}
-        data['success'] = True
-        data['message'] = "Signed in"
-        ws.send(json.dumps(data))
-
+    # Close Websocket
     ws.close()
   return True
 
@@ -84,23 +81,28 @@ def sign_in():
     # Check if password from form is same as in database
     if (password == dataset[2]):
 
-      # Create session token
-      token = "ABCDEFG1234" #TEMP
-      #token = token_generator()
+      # Check if user is already logged:
+      if (is_logged_in_by_email(email) == True):
+        # Append new token to existing user object
+        increase_session_count(email)
+        # Get existing token
+        token = get_user_by_email(email)['token']
+      else:
+        # Create session token
+        token = token_generator()
+        # Create new user object and add it to the list of logged in users 
+        logged_in_users.append({'email':email,'token':token,'sessions':1})
 
       # Pass success data to dictionary
       data['success'] = True
       data['message'] = 'Successfully signed in'
       data['data'] = token
 
-      # Append the user to the list of logged in users
-      logged_in_users.append({'email':email,'token':token})
     else:
       # In case password is not the same provide error information
       data['success'] = False
       data['message'] = 'Wrong username or password'
   else:
-
     # In case user can't be fetched from database provide error information
     data['success'] = False
     data['message'] = 'Wrong username or password'
@@ -164,8 +166,17 @@ def sign_out():
   # Check if user is logged in
   if (is_logged_in(token) == True):
 
-    # Remove user from logged in users
-    sign_out_user_by_token(token)
+    # Get user by token
+    user = get_user_by_token(token)
+    email = user['email']
+    sessionCount = user['sessions']
+    # Check if User has multiple sessions
+    if (sessionCount > 1):
+      # Decrease Session Count
+      decrease_session_count(email)
+    else:
+      # Remove user from logged in users
+      sign_out_user_by_token(token)
 
     # Pass success data to dictionary
     data['success'] = True
@@ -469,13 +480,28 @@ def get_user_by_email(email):
   logged_in_user = [logged_in_user for logged_in_user in logged_in_users if logged_in_user.get('email') == email][0]
   return logged_in_user
 
+# increase session count
+def increase_session_count(email):
+  global logged_in_users
+  logged_in_user = [logged_in_user for logged_in_user in logged_in_users if logged_in_user.get('email') == email][0]
+  logged_in_user['sessions'] += 1
+
+def decrease_session_count(email):
+  global logged_in_users
+  logged_in_user = [logged_in_user for logged_in_user in logged_in_users if logged_in_user.get('email') == email][0]
+  logged_in_user['sessions'] -= 1
+
 # private, set websocket session for user
 def store_websocket(email, session):
   global logged_in_users
   logged_in_user = [logged_in_user for logged_in_user in logged_in_users if logged_in_user.get('email') == email][0]
-  logged_in_user['session'] = session
-  #TODO: TEMP
-  print logged_in_user
+  logged_in_user['websocket'] = session
+
+# private, clear websocket session for user
+def remove_websocket(email, session):
+  global logged_in_users
+  logged_in_user = [logged_in_user for logged_in_user in logged_in_users if logged_in_user.get('email') == email][0]
+  logged_in_user['websocket'] = None
 
 # private, get user data as dictionary
 def get_user_data(email):
