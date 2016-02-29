@@ -23,6 +23,110 @@ profileView = function() {
     changeActiveProfileViewTab(localStorage.getItem('tab'));
 }
 
+/*
+ * privat; changeActiveProfileViewTab() makes only the active Tab in the ProfileView
+ * visible to the user and injects data into the html code via further functions
+ */
+function changeActiveProfileViewTab(tab) {
+    if (tab == 'browse') {
+        localStorage.setItem('tab', 'browse');
+        document.getElementById('home').style.display = "none";
+        document.getElementById('browse').style.display = "block";
+        document.getElementById('browseContent').style.display = "none";
+        document.getElementById('account').style.display = "none";
+    } else if (tab == 'browseContent') {
+        localStorage.setItem('tab', 'browseContent');
+        document.getElementById('home').style.display = "none";
+        document.getElementById('browse').style.display = "block";
+        document.getElementById('browseContent').style.display = "block";
+        document.getElementById('account').style.display = "none";
+        injectBrowseUserData();
+        injectBrowsePosts();
+    } else if (tab == 'account') {
+        localStorage.setItem('tab','account');
+        document.getElementById('home').style.display = "none";
+        document.getElementById('browse').style.display = "none";
+        document.getElementById('browseContent').style.display = "none";
+        document.getElementById('account').style.display = "block";
+    //default is home
+    } else {
+        localStorage.setItem('tab','home');
+        document.getElementById('home').style.display = "block";
+        document.getElementById('browse').style.display = "none";
+        document.getElementById('browseContent').style.display = "none";
+        document.getElementById('account').style.display = "none";
+        injectHomeUserData();
+        injectHomePosts();
+    }
+}
+
+/* signInUser() user is signedin or error in html field is set */
+function signInUser() {
+
+    // Get Password Form Values and create javascript object
+    var userdata = {
+      email:document.forms['signinForm']['loginEmail'].value,
+      password:document.forms['signinForm']['loginPassword'].value
+    };
+
+    // Check Password Length
+    if (checkPwdLength(userdata.password) === false) {
+        document.getElementById('valErrMsgRenewPwdForm').innerHTML = "PWD requires >= 8 chars";
+        return false;
+    }
+
+    // SignIn User
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/signin/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
+          // Set Session Token
+          localStorage.setItem("token", serverResponse.data);
+          // Redirect User to profileView
+          profileView();
+
+          // Opening Websocket
+          // NOTE: Chrommium does not work with soap
+          // var websocket = new WebSocket('ws://127.0.0.1:5000/wssignin/', ['soap']);  
+          var websocket = new WebSocket('ws://127.0.0.1:5000/websocket/');
+          // Sending data to server over websocket
+          websocket.onopen = function (event) {
+            websocket.send(JSON.stringify(userdata)); 
+          };
+          // Receiving data from server over websocket
+          websocket.onmessage = function (event) {
+            var msg = JSON.parse(event.data);
+            // Process Message
+            if (msg.message === 'Sign out') {
+              //websocket.close()
+              signOut();
+            }
+          };
+          // Error Handling
+          websocket.onerror = function (event) {
+            console.log("Error with Websocket. Data is: " + event.data)
+          };
+
+        } else {
+          // inject error message into html
+          document.getElementById('valErrMsgSigninForm').innerHTML = serverResponse.message;
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
+
+    return false;
+}
+
+
 /* signUpUser() user gets signed up and signed in or error in html field is set */
 function signUpUser() {
 
@@ -67,29 +171,29 @@ function signUpUser() {
         if (serverResponse.success === true) {
 
           // SignIn User
-          var con2 = new XMLHttpRequest(); // Create XMLHttpRequest Object
-          con2.open("POST", '/signin/', true); // Create asynchronous Post Request to Server Resource
+          var innerCon = new XMLHttpRequest(); // Create XMLHttpRequest Object
+          innerCon.open("POST", '/signin/', true); // Create asynchronous Post Request to Server Resource
           // Specify a function which is executed each time the readyState property changes
-          con2.onreadystatechange = function() {
+          innerCon.onreadystatechange = function() {
             // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
-            if (con2.readyState == 4 && con2.status == 200) {
+            if (innerCon.readyState == 4 && innerCon.status == 200) {
               // Parse the JSON response from the server
-              var serverResponse2 = JSON.parse(con2.responseText);
+              var innerServerResponse = JSON.parse(innerCon.responseText);
               // Check response status
-              if (serverResponse2.success === true) {
+              if (innerServerResponse.success === true) {
                 // Set Session Token
-                localStorage.setItem("token", serverResponse2.data);
+                localStorage.setItem("token", innerServerResponse.data);
                 // Redirect User to profileView
                 profileView();
               } else {
                 // inject error message into html
-                document.getElementById('valErrMsgSigninForm').innerHTML = serverResponse2.message;
+                document.getElementById('valErrMsgSigninForm').innerHTML = innerServerResponse.message;
               }
             }
           };
-          con2.setRequestHeader("Content-Type", "application/json");
+          innerCon.setRequestHeader("Content-Type", "application/json");
           // Send JSON data to Server
-          con2.send(JSON.stringify(userdata));
+          innerCon.send(JSON.stringify(userdata));
 
         } else {
           // inject error message into html
@@ -104,79 +208,35 @@ function signUpUser() {
     return false;
 }
 
-/* signInUser() user is signedin or error in html field is set */
-function signInUser() {
+/* signOut user get signed out or error in html field is set */
+function signOut() {
 
-    // Get Password Form Values and create javascript object
-    var userdata = {
-      email:document.forms['signinForm']['loginEmail'].value,
-      password:document.forms['signinForm']['loginPassword'].value
-    };
-
-    // Check Password Length
-    if (checkPwdLength(userdata.password) === false) {
-        document.getElementById('valErrMsgRenewPwdForm').innerHTML = "PWD requires >= 8 chars";
+    // Get Token. If Token is not available redirect user to welcomeView.
+    var token = getTokenOrNull();
+    if (token === null) {
+        welcomeView();
         return false;
     }
 
-    // SignIn User
-    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-    con.open("POST", '/signin/', true); // Create asynchronous Post Request to Server Resource
-    // Specify a function which is executed each time the readyState property changes
-    con.onreadystatechange = function() {
-      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
-      if (con.readyState == 4 && con.status == 200) {
-        // Parse the JSON response from the server
-        var serverResponse = JSON.parse(con.responseText);
-        // Check response status
-        if (serverResponse.success === true) {
-          // Set Session Token
-          localStorage.setItem("token", serverResponse.data);
-          // Redirect User to profileView
-          profileView();
+    // Create javascript object
+    var userdata = {
+      token:token
+    }
 
-          // Opening Websocket
-          // TODO: Chrommium does not work with soap
-          // var websocket = new WebSocket('ws://127.0.0.1:5000/wssignin/', ['soap']);  
-          var websocket = new WebSocket('ws://127.0.0.1:5000/websocket/');
-          // Sending data to server over websocket
-          websocket.onopen = function (event) {
-            websocket.send(JSON.stringify(userdata)); 
-          };
-          // Receiving data from server over websocket
-          websocket.onmessage = function (event) {
-            var msg = JSON.parse(event.data);
-            // Process Message
-            if (msg.message === 'Sign out') {
-              //websocket.close()
-              signOut();
-            }
-          };
-          // Error Handling
-          websocket.onerror = function (event) {
-            console.log("Error with Websocket. Data is: " + event.data)
-          };
-
-        } else {
-          // inject error message into html
-          document.getElementById('valErrMsgSigninForm').innerHTML = serverResponse.message;
-        }
-      }
-    };
-    con.setRequestHeader("Content-Type", "application/json");
-    // Send JSON data to Server
-    con.send(JSON.stringify(userdata));
+    // SignOut User
+    var successFunction = function() {
+        // delete localStorage objects
+        cleanLocalStorage();
+        // redurect user to welcomeView
+        welcomeView();
+    }
+    var errorFunction = function() {
+        // inject error message into html
+        document.getElementById('valErrMsgRenewPwdForm').innerHTML = serverResponse.message;
+    }
+    createXMLHttpRequest('/signout/', userdata, successFunction, errorFunction);
 
     return false;
-}
-
-// privat; check if a token is available
-function getTokenOrNull() {
-    if (localStorage.getItem('token') === null) {
-        return null;
-    } else {
-        return localStorage.getItem('token');
-    }
 }
 
 /* resetPassword() sets a new password or error in html field is set  */
@@ -223,173 +283,6 @@ function resetPassword() {
           document.getElementById('valSucMsgRenewPwdForm').innerHTML = "Password changed!";
         } else {
           document.getElementById('valErrMsgRenewPwdForm').innerHTML = result.message;
-        }
-      }
-    };
-    con.setRequestHeader("Content-Type", "application/json");
-    // Send JSON data to Server
-    con.send(JSON.stringify(userdata));
-
-    return false;
-}
-
-// private; Check if the password field and the repeatPswField match
-function comparePwd(password1, password2) {
-    if (password1.localeCompare(password2) != 0) {
-        return false;
-    } else {
-        return true;
-    }
-}
-
-// private; Check if the password provided by the user is long enough
-function checkPwdLength(password) {
-    if (password.length < 8) {
-        return false;
-    } else {
-        return true;
-    }
-}
-
-/*
- * changeActiveProfileViewTab() makes only the active Tab in the ProfileView
- * visible to the user and injects data into the html code via further functions
- */
-function changeActiveProfileViewTab(tab) {
-    if (tab == 'browse') {
-        localStorage.setItem('tab', 'browse');
-        document.getElementById('home').style.display = "none";
-        document.getElementById('browse').style.display = "block";
-        document.getElementById('browseContent').style.display = "none";
-        document.getElementById('account').style.display = "none";
-    } else if (tab == 'browseContent') {
-        localStorage.setItem('tab', 'browseContent');
-        document.getElementById('home').style.display = "none";
-        document.getElementById('browse').style.display = "block";
-        document.getElementById('browseContent').style.display = "block";
-        document.getElementById('account').style.display = "none";
-        injectBrowseUserData();
-        injectBrowsePosts();
-    } else if (tab == 'account') {
-        localStorage.setItem('tab','account');
-        document.getElementById('home').style.display = "none";
-        document.getElementById('browse').style.display = "none";
-        document.getElementById('browseContent').style.display = "none";
-        document.getElementById('account').style.display = "block";
-    //default is home
-    } else {
-        localStorage.setItem('tab','home');
-        document.getElementById('home').style.display = "block";
-        document.getElementById('browse').style.display = "none";
-        document.getElementById('browseContent').style.display = "none";
-        document.getElementById('account').style.display = "none";
-        injectHomeUserData();
-        injectHomePosts();
-    }
-}
-
-function createXMLHttpRequest(url, userdata, successFunction, errorFunction) {
-  var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-  con.open("POST", url, true); // Create asynchronous Post Request to Server Resource
-  // Specify a function which is executed each time the readyState property changes
-  con.onreadystatechange = function() {
-    // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
-    if (con.readyState == 4 && con.status == 200) {
-      // Parse the JSON response from the server
-      var serverResponse = JSON.parse(con.responseText);
-      // Check response status
-      if (serverResponse.success === true) {
-        successFunction();
-      } else {
-        errorFunction();
-      }
-    }
-  };
-  con.setRequestHeader("Content-Type", "application/json");
-  // Send JSON data to Server
-  con.send(JSON.stringify(userdata));
-}
-
-/* signOut user get signed out or error in html field is set */
-function signOut() {
-
-    // Get Token. If Token is not available redirect user to welcomeView.
-    var token = getTokenOrNull();
-    if (token === null) {
-        welcomeView();
-        return false;
-    }
-
-    // Create javascript object
-    var userdata = {
-      token:token
-    }
-
-    // SignOut User
-    var successFunction = function() {
-        // delete localStorage objects
-        cleanLocalStorage();
-        // redurect user to welcomeView
-        welcomeView();
-    }
-    var errorFunction = function() {
-        // inject error message into html
-        document.getElementById('valErrMsgRenewPwdForm').innerHTML = serverResponse.message;
-    }
-    createXMLHttpRequest('/signout/', userdata, successFunction, errorFunction);
-
-    return false;
-}
-
-//private; remove localStorage objects
-function cleanLocalStorage() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('toEmail');
-    localStorage.removeItem('tab');
-}
-
-/* postMessageFromHomeTab() gets post from form and sends it to the server */
-function postMessageFromHomeTab() {
-
-    // Get Token. If Token is not available redirect user to welcomeView.
-    var token = getTokenOrNull();
-    if (token === null) {
-        welcomeView();
-        return false;
-    }
-
-    // Get Form Value
-    var post = document.forms['homePostAreaForm']['post'].value;
-    var toEmail = document.forms['homePostAreaForm']['toEmail'].value;
-
-    // Create javascript object
-    userdata = {
-      token:token,
-      message:post,
-      receiverEmail:toEmail
-    }
-
-    // Get UserData from Server
-    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-    con.open("POST", '/postmessage/', true); // Create asynchronous Post Request to Server Resource
-    // Specify a function which is executed each time the readyState property changes
-    con.onreadystatechange = function() {
-      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
-      if (con.readyState == 4 && con.status == 200) {
-        // Parse the JSON response from the server
-        var serverResponse = JSON.parse(con.responseText);
-        // Check response status
-        if (serverResponse.success === true) {
-          // Inject data into html
-          document.getElementById('valSucMsgHomePostAreaForm').innerHTML = "Message posted!";
-          // Clear Form
-          document.forms['homePostAreaForm']['post'].value = " ";
-          document.forms['homePostAreaForm']['toEmail'].value = " ";
-          // Get Posts in order to show newly created posts
-          injectHomePosts();
-        } else {
-          // inject error message into html
-          document.getElementById('valErrMsgHomePostAreaForm').innerHTML = serverResponse.message;
         }
       }
     };
@@ -488,71 +381,6 @@ function injectHomePosts() {
 
 }
 
-/* displayUser() Display another User  */
-function displayUser() {
-
-    // Get email and save it in localStorage
-    var email = document.forms['searchUserForm']['findByEmail'].value;
-    localStorage.setItem('toEmail', email);
-
-    // Save information that user wants to show another user and reload the view
-    localStorage.setItem('tab', 'browseContent');
-    profileView();
-
-    return false;
-}
-
-/* postMessageFromBrowseTab() gets post from form and sends it to the server
- * it retrieves the email from the local storage */
-function postMessageFromBrowseTab() {
-
-    // Get Token. If Token is not available redirect user to welcomeView.
-    var token = getTokenOrNull();
-    if (token === null) {
-        welcomeView();
-        return false;
-    }
-    // Get Data
-    var post = document.forms['browsePostAreaForm']['post'].value;
-    var toEmail = localStorage.getItem('toEmail');
-
-    // Create javascript object
-    var userdata = {
-      token:token,
-      message:post,
-      receiverEmail:toEmail
-    }
-
-    // Get UserData from Server
-    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-    con.open("POST", '/postmessage/', true); // Create asynchronous Post Request to Server Resource
-    // Specify a function which is executed each time the readyState property changes
-    con.onreadystatechange = function() {
-      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
-      if (con.readyState == 4 && con.status == 200) {
-        // Parse the JSON response from the server
-        var serverResponse = JSON.parse(con.responseText);
-        // Check response status
-        if (serverResponse.success === true) {
-          // Inject data into html
-          document.getElementById('valSucMsgBrowsePostAreaForm').innerHTML = "Message posted!";
-          // Clear form
-          document.forms['browsePostAreaForm']['post'].value = " ";
-          // Get Posts in order to show newly created posts
-          injectBrowsePosts();
-        } else {
-          // inject error message into html
-          document.getElementById('valErrMsgBrowsePostAreaForm').innerHTML = serverResponse.message;
-        }
-      }
-    };
-    con.setRequestHeader("Content-Type", "application/json");
-    // Send JSON data to Server
-    con.send(JSON.stringify(userdata));
-
-    return false;
-}
-
 /* injectBrowseUserData() gets UserData from User stored in localStorage and injects it into the html code */
 function injectBrowseUserData(userdata) {
 
@@ -648,3 +476,180 @@ function injectBrowsePosts() {
 
     return false;
 }
+
+/* postMessageFromHomeTab() gets post from form and sends it to the server */
+function postMessageFromHomeTab() {
+
+    // Get Token. If Token is not available redirect user to welcomeView.
+    var token = getTokenOrNull();
+    if (token === null) {
+        welcomeView();
+        return false;
+    }
+
+    // Get Form Value
+    var post = document.forms['homePostAreaForm']['post'].value;
+    var toEmail = document.forms['homePostAreaForm']['toEmail'].value;
+
+    // Create javascript object
+    userdata = {
+      token:token,
+      message:post,
+      receiverEmail:toEmail
+    }
+
+    // Get UserData from Server
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/postmessage/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
+          // Inject data into html
+          document.getElementById('valSucMsgHomePostAreaForm').innerHTML = "Message posted!";
+          // Clear Form
+          document.forms['homePostAreaForm']['post'].value = " ";
+          document.forms['homePostAreaForm']['toEmail'].value = " ";
+          // Get Posts in order to show newly created posts
+          injectHomePosts();
+        } else {
+          // inject error message into html
+          document.getElementById('valErrMsgHomePostAreaForm').innerHTML = serverResponse.message;
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
+
+    return false;
+}
+
+/* postMessageFromBrowseTab() gets post from form and sends it to the server
+ * it retrieves the email from the local storage */
+function postMessageFromBrowseTab() {
+
+    // Get Token. If Token is not available redirect user to welcomeView.
+    var token = getTokenOrNull();
+    if (token === null) {
+        welcomeView();
+        return false;
+    }
+    // Get Data
+    var post = document.forms['browsePostAreaForm']['post'].value;
+    var toEmail = localStorage.getItem('toEmail');
+
+    // Create javascript object
+    var userdata = {
+      token:token,
+      message:post,
+      receiverEmail:toEmail
+    }
+
+    // Get UserData from Server
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/postmessage/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
+          // Inject data into html
+          document.getElementById('valSucMsgBrowsePostAreaForm').innerHTML = "Message posted!";
+          // Clear form
+          document.forms['browsePostAreaForm']['post'].value = " ";
+          // Get Posts in order to show newly created posts
+          injectBrowsePosts();
+        } else {
+          // inject error message into html
+          document.getElementById('valErrMsgBrowsePostAreaForm').innerHTML = serverResponse.message;
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
+
+    return false;
+}
+
+//private; creates XMLHttpRequest
+function createXMLHttpRequest(url, userdata, successFunction, errorFunction) {
+  var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+  con.open("POST", url, true); // Create asynchronous Post Request to Server Resource
+  // Specify a function which is executed each time the readyState property changes
+  con.onreadystatechange = function() {
+    // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+    if (con.readyState == 4 && con.status == 200) {
+      // Parse the JSON response from the server
+      var serverResponse = JSON.parse(con.responseText);
+      // Check response status
+      if (serverResponse.success === true) {
+        successFunction();
+      } else {
+        errorFunction();
+      }
+    }
+  };
+  con.setRequestHeader("Content-Type", "application/json");
+  // Send JSON data to Server
+  con.send(JSON.stringify(userdata));
+}
+
+/* displayUser() Display another User  */
+function displayUser() {
+
+    // Get email and save it in localStorage
+    var email = document.forms['searchUserForm']['findByEmail'].value;
+    localStorage.setItem('toEmail', email);
+
+    // Save information that user wants to show another user and reload the view
+    localStorage.setItem('tab', 'browseContent');
+    profileView();
+
+    return false;
+}
+
+//private; remove localStorage objects
+function cleanLocalStorage() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('toEmail');
+    localStorage.removeItem('tab');
+}
+
+
+// privat; check if a token is available
+function getTokenOrNull() {
+    if (localStorage.getItem('token') === null) {
+        return null;
+    } else {
+        return localStorage.getItem('token');
+    }
+}
+
+// private; Check if the password field and the repeatPswField match
+function comparePwd(password1, password2) {
+    if (password1.localeCompare(password2) != 0) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+// private; Check if the password provided by the user is long enough
+function checkPwdLength(password) {
+    if (password.length < 8) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+
