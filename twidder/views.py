@@ -243,11 +243,8 @@ def change_password():
   return json.dumps(data)
 
 # Get user data by token
-@app.route('/getuserdatabytoken/', methods=['POST'])
-def get_user_data_by_token():
-
-  # Get token from form
-  token = request.json['token']
+@app.route('/getuserdatabytoken/<token>', methods=['GET'])
+def get_user_data_by_token(token):
 
   # Create empty dictionary for storing return data
   data = {}
@@ -278,13 +275,9 @@ def get_user_data_by_token():
   return json.dumps(data)
 
 # Get user data by email
-@app.route('/getuserdatabyemail/', methods=['POST'])
-def get_user_data_by_email():
+@app.route('/getuserdatabyemail/<token>/<email>/', methods=['GET'])
+def get_user_data_by_email(token, email):
 
-  # Get token and email from form
-  token = request.json['token']
-  email = request.json['email']
-  
   # Create empty dictionary for storing return data
   data = {}
 
@@ -355,11 +348,8 @@ def post_message():
   return json.dumps(data)
 
 # Get mesage by token
-@app.route('/getusermessagesbytoken/', methods=['POST'])
-def get_user_messages_by_token():
-
-  # Get token from form
-  token = request.json['token']
+@app.route('/getusermessagesbytoken/<token>/', methods=['GET'])
+def get_user_messages_by_token(token):
 
   # Create empty dictionary for storing return data
   data = {}
@@ -396,12 +386,8 @@ def get_user_messages_by_token():
   return json.dumps(data)
 
 # Get messages by email
-@app.route('/getusermessagesbyemail/', methods=['POST'])
-def get_user_messages_by_email():
-
-  # Get data from form
-  token = request.json['token']
-  email = request.json['email']
+@app.route('/getusermessagesbyemail/<token>/<email>/', methods=['GET'])
+def get_user_messages_by_email(token, email):
 
   # Create empty dictionary for storing return data
   data = {}

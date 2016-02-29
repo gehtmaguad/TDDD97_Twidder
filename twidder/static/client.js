@@ -410,12 +410,9 @@ function injectHomeUserData() {
         return false;
     }
 
-    // Create javascript object
-    var userdata = {token:token}
-
     // Get UserData from Server
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-    con.open("POST", '/getuserdatabytoken/', true); // Create asynchronous Post Request to Server Resource
+    con.open("GET", '/getuserdatabytoken/' + token, true); // Create asynchronous Get Request to Server Resource
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -437,9 +434,8 @@ function injectHomeUserData() {
         }
       }
     };
-    con.setRequestHeader("Content-Type", "application/json");
-    // Send JSON data to Server
-    con.send(JSON.stringify(userdata));
+    // Send 
+    con.send();
 
     return false;
 }
@@ -458,7 +454,8 @@ function injectHomePosts() {
 
     // Get UserData from Server
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-    con.open("POST", '/getusermessagesbytoken/', true); // Create asynchronous Post Request to Server Resource
+    // Create asynchronous Post Request to Server Resource
+    con.open("GET", '/getusermessagesbytoken/' + token + '/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -486,9 +483,8 @@ function injectHomePosts() {
         }
       }
     };
-    con.setRequestHeader("Content-Type", "application/json");
-    // Send JSON data to Server
-    con.send(JSON.stringify(userdata));
+    // Send
+    con.send();
 
 }
 
@@ -570,15 +566,10 @@ function injectBrowseUserData(userdata) {
     // Get Email from LocalStorage
     var email = localStorage.getItem('toEmail');
 
-    // Create javascript object
-    var userdata = {
-      token:token,
-      email:email
-    }
-
     // Get UserData from Server
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-    con.open("POST", '/getuserdatabyemail/', true); // Create asynchronous Post Request to Server Resource
+    // Create asynchronous Get Request to Server Resource
+    con.open("GET", '/getuserdatabyemail/' + token + '/' + email + '/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -599,9 +590,8 @@ function injectBrowseUserData(userdata) {
         }
       }
     };
-    con.setRequestHeader("Content-Type", "application/json");
-    // Send JSON data to Server
-    con.send(JSON.stringify(userdata));
+    // Send
+    con.send();
 
     return false;
 }
@@ -619,14 +609,10 @@ function injectBrowsePosts() {
     // Get Email from LocalStorage
     var email = localStorage.getItem('toEmail');
 
-    var userdata = {
-      token:token,
-      email:email
-    }
-
     // Get UserData from Server
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-    con.open("POST", '/getusermessagesbyemail/', true); // Create asynchronous Post Request to Server Resource
+    // Create asynchronous Get Request to Server Resource
+    con.open("GET", '/getusermessagesbyemail/' + token + '/' + email + '/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -657,9 +643,8 @@ function injectBrowsePosts() {
         }
       }
     };
-    con.setRequestHeader("Content-Type", "application/json");
-    // Send JSON data to Server
-    con.send(JSON.stringify(userdata));
+    // Send
+    con.send();
 
     return false;
 }
