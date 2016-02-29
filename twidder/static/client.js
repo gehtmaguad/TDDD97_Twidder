@@ -34,6 +34,9 @@ function changeActiveProfileViewTab(tab) {
         document.getElementById('browse').style.display = "block";
         document.getElementById('browseContent').style.display = "none";
         document.getElementById('account').style.display = "none";
+        document.getElementById('browseButton').style.background = '#58D3F7';
+        document.getElementById('homeButton').style.background = '#FCFCFC';
+        document.getElementById('accountButton').style.background = '#FCFCFC';
     } else if (tab == 'browseContent') {
         localStorage.setItem('tab', 'browseContent');
         document.getElementById('home').style.display = "none";
@@ -48,6 +51,9 @@ function changeActiveProfileViewTab(tab) {
         document.getElementById('browse').style.display = "none";
         document.getElementById('browseContent').style.display = "none";
         document.getElementById('account').style.display = "block";
+        document.getElementById('browseButton').style.background = '#FCFCFC';
+        document.getElementById('homeButton').style.background = '#FCFCFC';
+        document.getElementById('accountButton').style.background = '#58D3F7';
     //default is home
     } else {
         localStorage.setItem('tab','home');
@@ -55,6 +61,9 @@ function changeActiveProfileViewTab(tab) {
         document.getElementById('browse').style.display = "none";
         document.getElementById('browseContent').style.display = "none";
         document.getElementById('account').style.display = "none";
+        document.getElementById('browseButton').style.background = '#FCFCFC';
+        document.getElementById('homeButton').style.background = '#58D3F7';
+        document.getElementById('accountButton').style.background = '#FCFCFC';
         injectHomeUserData();
         injectHomePosts();
     }
