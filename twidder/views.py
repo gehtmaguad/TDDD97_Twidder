@@ -295,7 +295,6 @@ def get_user_data_by_email(token, email):
 
     # Pass success data to dictionary
     data['success'] = True
-    data['success'] = True
     data['message'] = 'Successfully retrieved user data'
     data['data'] = user
   else:

@@ -15,6 +15,7 @@ window.onload = function(){
 // privat; injects welcomeView into activeView
 welcomeView = function() {
     document.getElementById("activeView").innerHTML = document.getElementById("welcomeView").innerHTML;
+    localStorage.setItem('showBrowseContent', 'false');
 }
 
 // privat; injects profileView into activeView
@@ -32,19 +33,17 @@ function changeActiveProfileViewTab(tab) {
         localStorage.setItem('tab', 'browse');
         document.getElementById('home').style.display = "none";
         document.getElementById('browse').style.display = "block";
-        document.getElementById('browseContent').style.display = "none";
         document.getElementById('account').style.display = "none";
         document.getElementById('browseButton').style.background = '#58D3F7';
         document.getElementById('homeButton').style.background = '#FCFCFC';
         document.getElementById('accountButton').style.background = '#FCFCFC';
-    } else if (tab == 'browseContent') {
-        localStorage.setItem('tab', 'browseContent');
-        document.getElementById('home').style.display = "none";
-        document.getElementById('browse').style.display = "block";
-        document.getElementById('browseContent').style.display = "block";
-        document.getElementById('account').style.display = "none";
-        injectBrowseUserData();
-        injectBrowsePosts();
+        if (localStorage.getItem('showBrowseContent') === 'true') {
+          document.getElementById('browseContent').style.display = "block";
+          injectBrowseUserData();
+          injectBrowsePosts();
+        } else {
+          document.getElementById('browseContent').style.display = "none";
+        }
     } else if (tab == 'account') {
         localStorage.setItem('tab','account');
         document.getElementById('home').style.display = "none";
@@ -80,7 +79,7 @@ function signInUser() {
 
     // Check Password Length
     if (checkPwdLength(userdata.password) === false) {
-        document.getElementById('valErrMsgRenewPwdForm').innerHTML = "PWD requires >= 8 chars";
+        document.getElementById('valErrMsgSigninForm').innerHTML = "PWD requires >= 8 chars";
         return false;
     }
 
@@ -169,7 +168,8 @@ function signUpUser() {
 
     // SignUp and SignIn User
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-    con.open("POST", '/signup/', true); // Create asynchronous Post Request to Server Resource
+    // Create asynchronous Post Request to Server Resource
+    con.open("POST", '/signup/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -181,7 +181,8 @@ function signUpUser() {
 
           // SignIn User
           var innerCon = new XMLHttpRequest(); // Create XMLHttpRequest Object
-          innerCon.open("POST", '/signin/', true); // Create asynchronous Post Request to Server Resource
+          // Create asynchronous Post Request to Server Resource
+          innerCon.open("POST", '/signin/', true); 
           // Specify a function which is executed each time the readyState property changes
           innerCon.onreadystatechange = function() {
             // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -206,10 +207,11 @@ function signUpUser() {
 
         } else {
           // inject error message into html
-          document.getElementById('valErrMsgSignupForm').innerHTML = signUp.message;
+          document.getElementById('valErrMsgSignupForm').innerHTML = serverResponse.message;
         }
       }
     };
+    // Set Header
     con.setRequestHeader("Content-Type", "application/json");
     // Send JSON data to Server
     con.send(JSON.stringify(userdata));
@@ -243,6 +245,7 @@ function signOut() {
         // inject error message into html
         document.getElementById('valErrMsgRenewPwdForm').innerHTML = serverResponse.message;
     }
+    // Call Function which does the actual XMLHttpRequest
     createXMLHttpRequest('/signout/', userdata, successFunction, errorFunction);
 
     return false;
@@ -268,12 +271,14 @@ function resetPassword() {
 
     // Check Password Length
     if (checkPwdLength(userdata.newPassword) === false) {
+        document.getElementById('valSucMsgRenewPwdForm').innerHTML = "";
         document.getElementById('valErrMsgRenewPwdForm').innerHTML = "PWD requires >= 8 chars";
         return false;
     }
 
     // Compare Password Fields
     if (comparePwd(userdata.newPassword, userdata.repeatNewPsw) === false) {
+        document.getElementById('valSucMsgRenewPwdForm').innerHTML = "";
         document.getElementById('valErrMsgRenewPwdForm').innerHTML = "Same PWD required";
         return false;
     }
@@ -287,11 +292,15 @@ function resetPassword() {
       if (con.readyState == 4 && con.status == 200) {
         // Parse the JSON response from the server
         var serverResponse = JSON.parse(con.responseText);
+        // TODO: Clear Form if success?
+        // TODO: Clear Error or Success Message when switched away and back to this Tab?
         // Check response status
         if (serverResponse.success === true) {
+          document.getElementById('valErrMsgRenewPwdForm').innerHTML = "";
           document.getElementById('valSucMsgRenewPwdForm').innerHTML = "Password changed!";
         } else {
-          document.getElementById('valErrMsgRenewPwdForm').innerHTML = result.message;
+          document.getElementById('valSucMsgRenewPwdForm').innerHTML = "";
+          document.getElementById('valErrMsgRenewPwdForm').innerHTML = serverResponse.message;
         }
       }
     };
@@ -519,14 +528,17 @@ function postMessageFromHomeTab() {
         // Check response status
         if (serverResponse.success === true) {
           // Inject data into html
+          document.getElementById('valErrMsgHomePostAreaForm').innerHTML = "";
           document.getElementById('valSucMsgHomePostAreaForm').innerHTML = "Message posted!";
-          // Clear Form
-          document.forms['homePostAreaForm']['post'].value = " ";
-          document.forms['homePostAreaForm']['toEmail'].value = " ";
+          // TODO: Clear Form if success?
+          // TODO: Clear Error or Success Message when switched away and back to this Tab?
+          //document.forms['homePostAreaForm']['post'].value = " ";
+          //document.forms['homePostAreaForm']['toEmail'].value = " ";
           // Get Posts in order to show newly created posts
           injectHomePosts();
         } else {
           // inject error message into html
+          document.getElementById('valSucMsgHomePostAreaForm').innerHTML = "";
           document.getElementById('valErrMsgHomePostAreaForm').innerHTML = serverResponse.message;
         }
       }
@@ -571,13 +583,16 @@ function postMessageFromBrowseTab() {
         // Check response status
         if (serverResponse.success === true) {
           // Inject data into html
+          document.getElementById('valErrMsgBrowsePostAreaForm').innerHTML = "";
           document.getElementById('valSucMsgBrowsePostAreaForm').innerHTML = "Message posted!";
-          // Clear form
-          document.forms['browsePostAreaForm']['post'].value = " ";
+          // TODO: Clear form if success?
+          // TODO: Clear Error or Success Message when switched away and back to this Tab?
+          //document.forms['browsePostAreaForm']['post'].value = " ";
           // Get Posts in order to show newly created posts
           injectBrowsePosts();
         } else {
           // inject error message into html
+          document.getElementById('valSucMsgBrowsePostAreaForm').innerHTML = "";
           document.getElementById('valErrMsgBrowsePostAreaForm').innerHTML = serverResponse.message;
         }
       }
@@ -615,13 +630,43 @@ function createXMLHttpRequest(url, userdata, successFunction, errorFunction) {
 /* displayUser() Display another User  */
 function displayUser() {
 
+    // Get Token. If Token is not available redirect user to welcomeView.
+    var token = getTokenOrNull();
+    if (token === null) {
+        welcomeView();
+        return false;
+    }
+
     // Get email and save it in localStorage
     var email = document.forms['searchUserForm']['findByEmail'].value;
     localStorage.setItem('toEmail', email);
 
-    // Save information that user wants to show another user and reload the view
-    localStorage.setItem('tab', 'browseContent');
-    profileView();
+    // Get UserData from Server
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    // Create asynchronous Get Request to Server Resource
+    con.open("GET", '/getuserdatabyemail/' + token + '/' + email + '/', true); 
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
+          // Save information that user wants to show another user and reload the view
+          localStorage.setItem('showBrowseContent', 'true');
+          profileView();
+        } else {
+          // In case of error save information that user is about to see the browse tab,
+          // reload the view and inject error message
+          localStorage.setItem('showBrowseContent', 'false');
+          profileView();
+          document.getElementById('valErrMsgSearchUserForm').innerHTML = "Email " + email + " is unknown";
+        }
+      }
+    };
+    // Send
+    con.send();
 
     return false;
 }
