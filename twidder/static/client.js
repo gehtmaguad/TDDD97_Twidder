@@ -11,31 +11,6 @@ window.onload = function(){
         profileView();
     }
 
-    // get context of chartjs
-    var data = {
-        labels: ["2016-02-26", "2016-02-27", "2016-02-28", "2016-02-29", "2016-03-01"],
-        datasets: [
-            {
-                label: "User Registrations",
-                fillColor: "rgba(220,220,220,0.5)",
-                strokeColor: "rgba(220,220,220,0.8)",
-                highlightFill: "rgba(220,220,220,0.75)",
-                highlightStroke: "rgba(220,220,220,1)",
-                data: [65, 59, 80, 81, 69]
-            },
-            {
-                label: "User Currently Online",
-                fillColor: "rgba(151,187,205,0.5)",
-                strokeColor: "rgba(151,187,205,0.8)",
-                highlightFill: "rgba(151,187,205,0.75)",
-                highlightStroke: "rgba(151,187,205,1)",
-                data: [28, 48, 40, 19, 52]
-            }
-        ]
-    };
-    var ctx = document.getElementById("userStatsChart").getContext("2d");
-    var myBarChart = new Chart(ctx).Bar(data);
-
 };
 
 // privat; injects welcomeView into activeView
@@ -47,6 +22,54 @@ welcomeView = function() {
 // privat; injects profileView into activeView
 profileView = function() {
     document.getElementById("activeView").innerHTML = document.getElementById("profileView").innerHTML;
+
+    // Get Chart Data
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("GET", '/getchartstats/', true); // Create asynchronous Get Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        if (serverResponse.success === true) {
+          chartJsChart.datasets[0].bars[0].value = serverResponse.data.postsOnWall;
+          chartJsChart.datasets[1].bars[0].value = serverResponse.data.onlineUsers;
+          chartJsChart.update();
+        } else {
+          console.log("Error fetching chart stats");
+        }
+      }
+    };
+    // Send
+    con.send();
+
+
+    // chartjs: create instance of chart
+    var chartJsData = {
+        labels: ["currently"],
+        datasets: [
+            {
+                label: "Posts on my wall",
+                fillColor: "rgba(220,220,220,0.5)",
+                strokeColor: "rgba(220,220,220,0.8)",
+                highlightFill: "rgba(220,220,220,0.75)",
+                highlightStroke: "rgba(220,220,220,1)",
+                data: [0]
+            },
+            {
+                label: "Online users",
+                fillColor: "rgba(151,187,205,0.5)",
+                strokeColor: "rgba(151,187,205,0.8)",
+                highlightFill: "rgba(151,187,205,0.75)",
+                highlightStroke: "rgba(151,187,205,1)",
+                data: [0]
+            }
+        ]
+    };
+    var chartJsCtx = document.getElementById("chartJsChart").getContext("2d");
+    chartJsChart = new Chart(chartJsCtx).Bar(chartJsData);
+
     changeActiveProfileViewTab(localStorage.getItem('tab'));
 }
 
@@ -140,6 +163,9 @@ function signInUser() {
             if (msg.message === 'Sign out') {
               //websocket.close()
               signOut();
+            } else if (msg.message === 'OnlineCountChanged') {
+              chartJsChart.datasets[1].bars[0].value = msg.data;
+              chartJsChart.update();
             }
           };
           // Error Handling
@@ -260,19 +286,30 @@ function signOut() {
       token:token
     }
 
-    // SignOut User
-    var successFunction = function() {
-        // delete localStorage objects
-        cleanLocalStorage();
-        // redurect user to welcomeView
-        welcomeView();
-    }
-    var errorFunction = function() {
-        // inject error message into html
-        document.getElementById('valErrMsgRenewPwdForm').innerHTML = serverResponse.message;
-    }
-    // Call Function which does the actual XMLHttpRequest
-    createXMLHttpRequest('/signout/', userdata, successFunction, errorFunction);
+    // Renew password
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    con.open("POST", '/signout/', true); // Create asynchronous Post Request to Server Resource
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        // Check response status
+        if (serverResponse.success === true) {
+          // delete localStorage objects
+          cleanLocalStorage();
+          // redurect user to welcomeView
+          welcomeView();
+        } else {
+          // inject error message into html
+          document.getElementById('valErrMsgRenewPwdForm').innerHTML = serverResponse.message;
+        }
+      }
+    };
+    con.setRequestHeader("Content-Type", "application/json");
+    // Send JSON data to Server
+    con.send(JSON.stringify(userdata));
 
     return false;
 }
@@ -628,29 +665,6 @@ function postMessageFromBrowseTab() {
     con.send(JSON.stringify(userdata));
 
     return false;
-}
-
-//private; creates XMLHttpRequest
-function createXMLHttpRequest(url, userdata, successFunction, errorFunction) {
-  var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-  con.open("POST", url, true); // Create asynchronous Post Request to Server Resource
-  // Specify a function which is executed each time the readyState property changes
-  con.onreadystatechange = function() {
-    // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
-    if (con.readyState == 4 && con.status == 200) {
-      // Parse the JSON response from the server
-      var serverResponse = JSON.parse(con.responseText);
-      // Check response status
-      if (serverResponse.success === true) {
-        successFunction();
-      } else {
-        errorFunction();
-      }
-    }
-  };
-  con.setRequestHeader("Content-Type", "application/json");
-  // Send JSON data to Server
-  con.send(JSON.stringify(userdata));
 }
 
 /* displayUser() Display another User  */

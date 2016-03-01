@@ -81,7 +81,7 @@ def sign_in():
     # Check if password from form is same as in database
     if (password == dataset[2]):
 
-      # Check if user is already logged:
+      # Check if user is already logged in:
       if (is_logged_in_by_email(email) == True):
         # Append new token to existing user object
         increase_session_count(email)
@@ -98,6 +98,19 @@ def sign_in():
       data['message'] = 'Successfully signed in'
       data['data'] = token
 
+      # chartjs: Update Statistics about online users
+      count = len(logged_in_users)
+      for logged_in_user in logged_in_users:
+        if ('websocket' in logged_in_user):
+          # Form Data Object
+          chartjs = {}
+          chartjs['success'] = True
+          chartjs['message'] = "OnlineCountChanged"
+          chartjs['data'] = count
+          # Get Websocket and sent data
+          websocket = logged_in_user['websocket']
+          if websocket is not None:
+            websocket.send(json.dumps(chartjs))
     else:
       # In case password is not the same provide error information
       data['success'] = False
@@ -150,6 +163,7 @@ def sign_up():
   # Pass success data to dictionary
   data['success'] = True
   data['message'] = 'Successfully signed up'
+
   # return the dataset as json data
   return json.dumps(data)
 
@@ -181,6 +195,20 @@ def sign_out():
     # Pass success data to dictionary
     data['success'] = True
     data['message'] = 'Successfully signed out'
+
+    # chartjs: Update Statistics about online users
+    count = len(logged_in_users)
+    for logged_in_user in logged_in_users:
+      if ('websocket' in logged_in_user):
+        # Form Data Object
+        data = {}
+        data['success'] = True
+        data['message'] = "OnlineCountChanged"
+        data['data'] = count
+        # Get Websocket and sent data
+        websocket = logged_in_user['websocket']
+        if websocket is not None:
+          websocket.send(json.dumps(data))
   else:
     # Pass error data to dictionary
     data['success'] = False
@@ -425,6 +453,21 @@ def get_user_messages_by_email(token, email):
     data['message'] = 'Not able to get messages'
 
   # return the dataset as json data
+  return json.dumps(data)
+
+# Get user statistics
+@app.route('/getchartstats/', methods=['GET'])
+def get_chart_stats():
+
+  stats = {}
+  stats['onlineUsers'] = len(logged_in_users)
+  stats['postsOnWall'] = 25
+
+  data = {}
+  data['success'] = True
+  data['message'] = 'userstats'
+  data['data'] = stats
+
   return json.dumps(data)
 
 # privat, generate random token
