@@ -30,9 +30,9 @@ def root():
 def websocket():
   # Create websocket endpoint
   if request.environ.get('wsgi.websocket'):
+    ws = request.environ['wsgi.websocket']
     # Listen for messages in a loop
     while True:
-      ws = request.environ['wsgi.websocket']
       # Receive data from the client
       userdata = ws.receive()
       # Parse the data
