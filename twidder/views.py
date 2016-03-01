@@ -366,6 +366,20 @@ def post_message():
     # Pass success data to dictionary
     data['success'] = True
     data['message'] = 'Successfully posted message'
+
+    # chartjs: Send Update to User
+    user = get_user_by_email(receiver_email)
+    if ('websocket' in user):
+      # Form Data Object
+      chartjs = {}
+      chartjs['success'] = True
+      chartjs['message'] = 'MessageCountChanged'
+      chartjs['data'] = database_helper.get_message_count(receiver_email)
+      # Get Websocket and sent data
+      websocket = user['websocket']
+      if websocket is not None:
+        websocket.send(json.dumps(chartjs))
+
   else:
     # Pass error data to dictionary
     data['success'] = False
@@ -456,17 +470,32 @@ def get_user_messages_by_email(token, email):
   return json.dumps(data)
 
 # Get user statistics
-@app.route('/getchartstats/', methods=['GET'])
-def get_chart_stats():
-
-  stats = {}
-  stats['onlineUsers'] = len(logged_in_users)
-  stats['postsOnWall'] = 25
+@app.route('/getchartstats/<token>/', methods=['GET'])
+def get_chart_stats(token):
 
   data = {}
-  data['success'] = True
-  data['message'] = 'userstats'
-  data['data'] = stats
+
+  # Check if user is logged in
+  if (is_logged_in(token) == True):
+
+    # Get user 
+    logged_in_user = get_user_by_token(token)
+    email = logged_in_user['email']
+
+    # Get Stats
+    stats = {}
+    stats['onlineUsers'] = len(logged_in_users)
+    stats['postsOnWall'] = database_helper.get_message_count(email)
+
+    # Pass success data to dictionary
+    data['success'] = True
+    data['message'] = 'userstats'
+    data['data'] = stats
+
+  else:
+    # Pass error data to dictionary
+    data['success'] = False
+    data['message'] = 'Error fetching stats'
 
   return json.dumps(data)
 

@@ -23,9 +23,17 @@ welcomeView = function() {
 profileView = function() {
     document.getElementById("activeView").innerHTML = document.getElementById("profileView").innerHTML;
 
+    // Get Token. If Token is not available redirect user to welcomeView.
+    var token = getTokenOrNull();
+    if (token === null) {
+        welcomeView();
+        return false;
+    }
+
     // Get Chart Data
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-    con.open("GET", '/getchartstats/', true); // Create asynchronous Get Request to Server Resource
+    // Create asynchronous Get Request to Server Resource
+    con.open("GET", '/getchartstats/' + token + '/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -43,7 +51,6 @@ profileView = function() {
     };
     // Send
     con.send();
-
 
     // chartjs: create instance of chart
     var chartJsData = {
@@ -165,6 +172,9 @@ function signInUser() {
               signOut();
             } else if (msg.message === 'OnlineCountChanged') {
               chartJsChart.datasets[1].bars[0].value = msg.data;
+              chartJsChart.update();
+            } else if (msg.message === 'MessageCountChanged') {
+              chartJsChart.datasets[0].bars[0].value = msg.data;
               chartJsChart.update();
             }
           };

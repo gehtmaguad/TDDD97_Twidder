@@ -57,5 +57,12 @@ def get_messages(email):
   result = cursor.fetchall()
   return result
 
+def get_message_count(email):
+  conn = get_db()
+  cursor = conn.cursor()
+  cursor.execute('SELECT count(*) FROM wall WHERE to_email = ?', (email,))
+  result = cursor.fetchall()
+  return result
+
 def close():
   get_db().close()
