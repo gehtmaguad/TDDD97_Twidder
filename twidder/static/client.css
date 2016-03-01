@@ -97,6 +97,10 @@ div.formfield {
     padding-left: 20px;
 }
 
+#homeChartArea {
+    padding-left: 20px;
+}
+
 #homeRefreshArea {
     width: 250px;
     height: 125px;

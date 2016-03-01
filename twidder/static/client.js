@@ -10,6 +10,32 @@ window.onload = function(){
     } else {
         profileView();
     }
+
+    // get context of chartjs
+    var data = {
+        labels: ["2016-02-26", "2016-02-27", "2016-02-28", "2016-02-29", "2016-03-01"],
+        datasets: [
+            {
+                label: "User Registrations",
+                fillColor: "rgba(220,220,220,0.5)",
+                strokeColor: "rgba(220,220,220,0.8)",
+                highlightFill: "rgba(220,220,220,0.75)",
+                highlightStroke: "rgba(220,220,220,1)",
+                data: [65, 59, 80, 81, 69]
+            },
+            {
+                label: "User Currently Online",
+                fillColor: "rgba(151,187,205,0.5)",
+                strokeColor: "rgba(151,187,205,0.8)",
+                highlightFill: "rgba(151,187,205,0.75)",
+                highlightStroke: "rgba(151,187,205,1)",
+                data: [28, 48, 40, 19, 52]
+            }
+        ]
+    };
+    var ctx = document.getElementById("userStatsChart").getContext("2d");
+    var myBarChart = new Chart(ctx).Bar(data);
+
 };
 
 // privat; injects welcomeView into activeView
