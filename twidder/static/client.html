@@ -78,6 +78,7 @@
 					 <button id="homeButton" onclick="changeActiveProfileViewTab('home')">Home</button>
 					 <button id="browseButton" onclick="changeActiveProfileViewTab('browse')">Browse</button>
 					 <button id="accountButton" onclick="changeActiveProfileViewTab('account')">Account</button>
+					 <button id="chartjsButton" onclick="changeActiveProfileViewTab('chartjs')">Stats</button>
 				</div>
 				<div id="home">
 					<div id="homePersonalArea">
@@ -94,10 +95,10 @@
 					<div id="homePostArea">
 						<h2>Post Area</h2>
 						<form name="homePostAreaForm" onsubmit="return postMessageFromHomeTab()">
-							 <div class="formfield">
-								 <label>To Email:</label>
-								 <input type="email" name="toEmail" required><br>
-							 </div>
+							<div class="formfield">
+							    <label>To Email:</label>
+							    <input type="email" name="toEmail" required><br>
+							</div>
 							<div class="formfield">
 								<label>Post:</label>
 								<textarea class="messageTextArea" name="post" required></textarea><br>
@@ -119,10 +120,12 @@
 						<h2>Message Wall</h2>
 						<div id='homeMessageWall'></div>
 					</div>
-          <div id="homeChartArea">
-            <h2>Chart Area</h2>
-            <canvas id="chartJsChart" width="500" height="300"></canvas>
-          </div>
+				</div>
+				<div id="chartjs">
+                    <div id="homeChartArea">
+                        <h2>Chart Area</h2>
+                        <canvas id="chartJsChart" width="500" height="300"></canvas>
+                    </div>
 				</div>
 				<div id="browse">
 					<div id="browseSearchArea">

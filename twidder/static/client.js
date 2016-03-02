@@ -90,9 +90,11 @@ function changeActiveProfileViewTab(tab) {
         document.getElementById('home').style.display = "none";
         document.getElementById('browse').style.display = "block";
         document.getElementById('account').style.display = "none";
+        document.getElementById('chartjs').style.display = "none";
         document.getElementById('browseButton').style.background = '#58D3F7';
         document.getElementById('homeButton').style.background = '#FCFCFC';
         document.getElementById('accountButton').style.background = '#FCFCFC';
+        document.getElementById('chartjsButton').style.background = '#FCFCFC';
         if (localStorage.getItem('showBrowseContent') === 'true') {
           document.getElementById('browseContent').style.display = "block";
           injectBrowseUserData();
@@ -104,21 +106,33 @@ function changeActiveProfileViewTab(tab) {
         localStorage.setItem('tab','account');
         document.getElementById('home').style.display = "none";
         document.getElementById('browse').style.display = "none";
-        document.getElementById('browseContent').style.display = "none";
         document.getElementById('account').style.display = "block";
+        document.getElementById('chartjs').style.display = "none";
         document.getElementById('browseButton').style.background = '#FCFCFC';
         document.getElementById('homeButton').style.background = '#FCFCFC';
         document.getElementById('accountButton').style.background = '#58D3F7';
+        document.getElementById('chartjsButton').style.background = '#FCFCFC';
+    } else if (tab == 'chartjs') {
+        localStorage.setItem('tab','chartjs');
+        document.getElementById('home').style.display = "none";
+        document.getElementById('browse').style.display = "none";
+        document.getElementById('account').style.display = "none";
+        document.getElementById('chartjs').style.display = "block";
+        document.getElementById('browseButton').style.background = '#FCFCFC';
+        document.getElementById('homeButton').style.background = '#FCFCFC';
+        document.getElementById('accountButton').style.background = '#FCFCFC';
+        document.getElementById('chartjsButton').style.background = '#58D3F7';
     //default is home
     } else {
         localStorage.setItem('tab','home');
         document.getElementById('home').style.display = "block";
         document.getElementById('browse').style.display = "none";
-        document.getElementById('browseContent').style.display = "none";
         document.getElementById('account').style.display = "none";
+        document.getElementById('chartjs').style.display = "none";
         document.getElementById('browseButton').style.background = '#FCFCFC';
         document.getElementById('homeButton').style.background = '#58D3F7';
         document.getElementById('accountButton').style.background = '#FCFCFC';
+        document.getElementById('chartjsButton').style.background = '#FCFCFC';
         injectHomeUserData();
         injectHomePosts();
     }

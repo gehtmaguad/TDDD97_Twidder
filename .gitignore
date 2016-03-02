@@ -4,3 +4,4 @@ local
 include
 *.pyc
 *.swp
+.idea/*
