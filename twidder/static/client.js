@@ -22,61 +22,7 @@ welcomeView = function() {
 // privat; injects profileView into activeView
 profileView = function() {
     document.getElementById("activeView").innerHTML = document.getElementById("profileView").innerHTML;
-
-    // Get Token. If Token is not available redirect user to welcomeView.
-    var token = getTokenOrNull();
-    if (token === null) {
-        welcomeView();
-        return false;
-    }
-
-    // Get Chart Data
-    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-    // Create asynchronous Get Request to Server Resource
-    con.open("GET", '/getchartstats/' + token + '/', true); 
-    // Specify a function which is executed each time the readyState property changes
-    con.onreadystatechange = function() {
-      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
-      if (con.readyState == 4 && con.status == 200) {
-        // Parse the JSON response from the server
-        var serverResponse = JSON.parse(con.responseText);
-        if (serverResponse.success === true) {
-          chartJsChart.datasets[0].bars[0].value = serverResponse.data.postsOnWall;
-          chartJsChart.datasets[1].bars[0].value = serverResponse.data.onlineUsers;
-          chartJsChart.update();
-        } else {
-          console.log("Error fetching chart stats");
-        }
-      }
-    };
-    // Send
-    con.send();
-
-    // chartjs: create instance of chart
-    var chartJsData = {
-        labels: ["currently"],
-        datasets: [
-            {
-                label: "Posts on my wall",
-                fillColor: "rgba(220,220,220,0.5)",
-                strokeColor: "rgba(220,220,220,0.8)",
-                highlightFill: "rgba(220,220,220,0.75)",
-                highlightStroke: "rgba(220,220,220,1)",
-                data: [0]
-            },
-            {
-                label: "Online users",
-                fillColor: "rgba(151,187,205,0.5)",
-                strokeColor: "rgba(151,187,205,0.8)",
-                highlightFill: "rgba(151,187,205,0.75)",
-                highlightStroke: "rgba(151,187,205,1)",
-                data: [0]
-            }
-        ]
-    };
-    var chartJsCtx = document.getElementById("chartJsChart").getContext("2d");
-    chartJsChart = new Chart(chartJsCtx).Bar(chartJsData);
-
+    createGlobalRadarChart()
     changeActiveProfileViewTab(localStorage.getItem('tab'));
 }
 
@@ -185,10 +131,13 @@ function signInUser() {
               //websocket.close()
               signOut();
             } else if (msg.message === 'OnlineCountChanged') {
-              chartJsChart.datasets[1].bars[0].value = msg.data;
+              chartJsChart.datasets[0].points[0].value = msg.data;
               chartJsChart.update();
             } else if (msg.message === 'MessageCountChanged') {
-              chartJsChart.datasets[0].bars[0].value = msg.data;
+              chartJsChart.datasets[0].points[1].value = msg.data;
+              chartJsChart.update();
+            } else if (msg.message === 'PageViewsChanged') {
+              chartJsChart.datasets[0].points[2].value = msg.data;
               chartJsChart.update();
             }
           };
@@ -705,10 +654,10 @@ function displayUser() {
     var email = document.forms['searchUserForm']['findByEmail'].value;
     localStorage.setItem('toEmail', email);
 
-    // Get UserData from Server
+    // Check if the user entered in the search form exists
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
     // Create asynchronous Get Request to Server Resource
-    con.open("GET", '/getuserdatabyemail/' + token + '/' + email + '/', true); 
+    con.open("GET", '/gettrueifuserexists/' + token + '/' + email + '/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -770,4 +719,56 @@ function checkPwdLength(password) {
     }
 }
 
+function createGlobalRadarChart() {
 
+    // Get Token. If Token is not available redirect user to welcomeView.
+    var token = getTokenOrNull();
+    if (token === null) {
+        welcomeView();
+        return false;
+    }
+
+    // chartjs: create instance of chart
+    var chartJsData = {
+        labels: ["OnlineUsers", "MessageCount", "PageViews"],
+        datasets: [
+            {
+                label: "First Dataset",
+                fillColor: "rgba(151,187,205,0.2)",
+                strokeColor: "rgba(151,187,205,1)",
+                pointColor: "rgba(151,187,205,1)",
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: "rgba(151,187,205,1)",
+                data: [0, 0, 0]
+            }
+        ]
+    };
+    var chartJsCtx = document.getElementById("chartJsChart").getContext("2d");
+    // Create Global Variable which stores chart instance
+    chartJsChart = new Chart(chartJsCtx).Radar(chartJsData);
+
+    // Get Chart Data
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    // Create asynchronous Get Request to Server Resource
+    con.open("GET", '/getchartstats/' + token + '/', true); 
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        if (serverResponse.success === true) {
+          chartJsChart.datasets[0].points[0].value = serverResponse.data.onlineUsers;
+          chartJsChart.datasets[0].points[1].value = serverResponse.data.postsOnWall;
+          chartJsChart.datasets[0].points[2].value = serverResponse.data.pageViews;
+          chartJsChart.update();
+        } else {
+          console.log("Error fetching chart stats");
+        }
+      }
+    };
+    // Send
+    con.send();
+
+}

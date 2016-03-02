@@ -26,3 +26,14 @@ create table wall (
 insert into wall (from_email, to_email, message) values ('spohie@test.com', 'spohie@test.com', 'from sophie to sophie');
 insert into wall (from_email, to_email, message) values ('spohie@test.com', 'foo@bar.com', 'from sophie to foo');
 insert into wall (from_email, to_email, message) values ('foo@bar.com', 'spohie@test.com', 'from foo to sophie');
+
+drop table if exists pageviews;
+create table pageviews (
+  id integer primary key autoincrement,
+  email text not null,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+insert into pageviews (email) values ('spohie@test.com');
+insert into pageviews (email) values ('spohie@test.com');
+insert into pageviews (email) values ('foo@bar.com');

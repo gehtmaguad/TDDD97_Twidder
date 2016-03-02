@@ -64,5 +64,18 @@ def get_message_count(email):
   result = cursor.fetchall()
   return result
 
+def insert_page_view(email):
+  conn = get_db()
+  cursor = conn.cursor()
+  cursor.execute('INSERT INTO pageviews (email) values (?)', (email,))
+  conn.commit()
+
+def get_page_view_count(email):
+  conn = get_db()
+  cursor = conn.cursor()
+  cursor.execute('SELECT count(*) FROM pageviews WHERE email = ?', (email,))
+  result = cursor.fetchall()
+  return result
+  
 def close():
   get_db().close()

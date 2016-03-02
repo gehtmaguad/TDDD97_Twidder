@@ -325,6 +325,54 @@ def get_user_data_by_email(token, email):
     data['success'] = True
     data['message'] = 'Successfully retrieved user data'
     data['data'] = user
+
+    # Update page view count
+    database_helper.insert_page_view(email)
+    
+    # chartjs: update user page views
+    logged_in_user = get_user_by_email(email)
+    if ('websocket' in logged_in_user):
+      # Form Data Object
+      chartjs = {}
+      chartjs['success'] = True
+      chartjs['message'] = 'PageViewsChanged'
+      chartjs['data'] = database_helper.get_page_view_count(email)
+      # Get Websocket and sent data
+      websocket = logged_in_user['websocket']
+      if websocket is not None:
+        websocket.send(json.dumps(chartjs))
+
+  else:
+    # Pass error data to dictionary
+    data['success'] = False
+    data['message'] = 'Error retrieving user data'
+
+  # return the dataset as json data
+  return json.dumps(data)
+
+# Check if user exists
+@app.route('/gettrueifuserexists/<token>/<email>/', methods=['GET'])
+def get_true_if_user_exists(token, email):
+
+  # Create empty dictionary for storing return data
+  data = {}
+
+  # Check if user is logged in
+  if (is_logged_in(token) == True):
+
+    # Get user
+    user = get_user_data(email)
+    if (user == None):
+      # Pass error data to dictionary
+      data['success'] = False
+      data['message'] = 'Error retrieving user data'
+      # return the dataset as json data
+      return json.dumps(data)
+
+    # Pass success data to dictionary
+    data['success'] = True
+    data['message'] = 'Successfully retrieved user data'
+
   else:
     # Pass error data to dictionary
     data['success'] = False
@@ -486,6 +534,7 @@ def get_chart_stats(token):
     stats = {}
     stats['onlineUsers'] = len(logged_in_users)
     stats['postsOnWall'] = database_helper.get_message_count(email)
+    stats['pageViews'] = database_helper.get_page_view_count(email)
 
     # Pass success data to dictionary
     data['success'] = True
