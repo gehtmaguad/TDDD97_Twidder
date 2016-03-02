@@ -76,6 +76,15 @@ def get_page_view_count(email):
   cursor.execute('SELECT count(*) FROM pageviews WHERE email = ?', (email,))
   result = cursor.fetchall()
   return result
-  
+
+def get_page_view_history(email):
+  conn = get_db()
+  cursor = conn.cursor()
+  cursor.execute('SELECT strftime(\'%d\', timestamp), count(*) FROM pageviews \
+    WHERE email = ? AND timestamp >= strftime(\'%s\', \'2016-02-28 00:00:00\') \
+    GROUP BY strftime(\'%d\', timestamp)', (email,))
+  result = cursor.fetchall()
+  return result
+ 
 def close():
   get_db().close()

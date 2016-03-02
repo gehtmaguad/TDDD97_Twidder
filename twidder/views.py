@@ -98,6 +98,14 @@ def sign_in():
       data['message'] = 'Successfully signed in'
       data['data'] = token
 
+      #DEBUG TODO: JUST A TEST
+      dataset = database_helper.get_page_view_history(email)
+      print "GET PAGE VIEW HISTORY: "
+      print dataset
+      for elem in dataset:
+        print elem[1]
+      print "END: GET PAGE VIEW HISTORY: "
+
       # chartjs: Update Statistics about online users
       count = len(logged_in_users)
       for logged_in_user in logged_in_users:
