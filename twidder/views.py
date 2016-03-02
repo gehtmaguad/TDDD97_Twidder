@@ -330,30 +330,31 @@ def get_user_data_by_email(token, email):
     database_helper.insert_page_view(email)
     
     # chartjs: update user page views
-    logged_in_user = get_user_by_email(email)
-    if ('websocket' in logged_in_user):
+    if is_logged_in_by_email(email):
+      logged_in_user = get_user_by_email(email)
+      if ('websocket' in logged_in_user):
 
-      # Form Data Object
-      chartjs = {}
-      chartjs['success'] = True
-      chartjs['message'] = 'PageViewsChanged'
-      chartjs['data'] = database_helper.get_page_view_count(email)
-      # Get Websocket and sent data
-      websocket = logged_in_user['websocket']
-      if websocket is not None:
-        websocket.send(json.dumps(chartjs))
+        # Form Data Object
+        chartjs = {}
+        chartjs['success'] = True
+        chartjs['message'] = 'PageViewsChanged'
+        chartjs['data'] = database_helper.get_page_view_count(email)
+        # Get Websocket and sent data
+        websocket = logged_in_user['websocket']
+        if websocket is not None:
+          websocket.send(json.dumps(chartjs))
 
-      # Form Data Object
-      chartjs = {}
-      chartjs['success'] = True
-      chartjs['message'] = 'PageViewLastDayChanged'
-      chartjs['data'] = database_helper.get_page_view_history(email)[-1][1]
-      # Get Websocket and sent data
-      websocket = logged_in_user['websocket']
-      if websocket is not None:
-        websocket.send(json.dumps(chartjs))
+        # Form Data Object
+        chartjs = {}
+        chartjs['success'] = True
+        chartjs['message'] = 'PageViewLastDayChanged'
+        chartjs['data'] = database_helper.get_page_view_history(email)[-1][1]
+        # Get Websocket and sent data
+        websocket = logged_in_user['websocket']
+        if websocket is not None:
+          websocket.send(json.dumps(chartjs))
 
-
+  # if user is not logged in
   else:
     # Pass error data to dictionary
     data['success'] = False
@@ -428,18 +429,20 @@ def post_message():
     data['message'] = 'Successfully posted message'
 
     # chartjs: Send Update to User
-    user = get_user_by_email(receiver_email)
-    if ('websocket' in user):
-      # Form Data Object
-      chartjs = {}
-      chartjs['success'] = True
-      chartjs['message'] = 'MessageCountChanged'
-      chartjs['data'] = database_helper.get_message_count(receiver_email)
-      # Get Websocket and sent data
-      websocket = user['websocket']
-      if websocket is not None:
-        websocket.send(json.dumps(chartjs))
+    if is_logged_in_by_email(receiver_email):
+      user = get_user_by_email(receiver_email)
+      if ('websocket' in user):
+        # Form Data Object
+        chartjs = {}
+        chartjs['success'] = True
+        chartjs['message'] = 'MessageCountChanged'
+        chartjs['data'] = database_helper.get_message_count(receiver_email)
+        # Get Websocket and sent data
+        websocket = user['websocket']
+        if websocket is not None:
+          websocket.send(json.dumps(chartjs))
 
+  # if user is not logged in
   else:
     # Pass error data to dictionary
     data['success'] = False
