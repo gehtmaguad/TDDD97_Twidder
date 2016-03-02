@@ -98,14 +98,6 @@ def sign_in():
       data['message'] = 'Successfully signed in'
       data['data'] = token
 
-      #DEBUG TODO: JUST A TEST
-      dataset = database_helper.get_page_view_history(email)
-      print "GET PAGE VIEW HISTORY: "
-      print dataset
-      for elem in dataset:
-        print elem[1]
-      print "END: GET PAGE VIEW HISTORY: "
-
       # chartjs: Update Statistics about online users
       count = len(logged_in_users)
       for logged_in_user in logged_in_users:
@@ -340,6 +332,7 @@ def get_user_data_by_email(token, email):
     # chartjs: update user page views
     logged_in_user = get_user_by_email(email)
     if ('websocket' in logged_in_user):
+
       # Form Data Object
       chartjs = {}
       chartjs['success'] = True
@@ -349,6 +342,17 @@ def get_user_data_by_email(token, email):
       websocket = logged_in_user['websocket']
       if websocket is not None:
         websocket.send(json.dumps(chartjs))
+
+      # Form Data Object
+      chartjs = {}
+      chartjs['success'] = True
+      chartjs['message'] = 'PageViewLastDayChanged'
+      chartjs['data'] = database_helper.get_page_view_history(email)[-1][1]
+      # Get Websocket and sent data
+      websocket = logged_in_user['websocket']
+      if websocket is not None:
+        websocket.send(json.dumps(chartjs))
+
 
   else:
     # Pass error data to dictionary
@@ -525,9 +529,9 @@ def get_user_messages_by_email(token, email):
   # return the dataset as json data
   return json.dumps(data)
 
-# Get user statistics
-@app.route('/getchartstats/<token>/', methods=['GET'])
-def get_chart_stats(token):
+# Get data for radar chart
+@app.route('/getradarchartdata/<token>/', methods=['GET'])
+def get_radar_chart_data(token):
 
   data = {}
 
@@ -548,6 +552,41 @@ def get_chart_stats(token):
     data['success'] = True
     data['message'] = 'userstats'
     data['data'] = stats
+
+  else:
+    # Pass error data to dictionary
+    data['success'] = False
+    data['message'] = 'Error fetching stats'
+
+  return json.dumps(data)
+
+# Get data for radar chart
+@app.route('/getbarchartdata/<token>/', methods=['GET'])
+def get_bar_chart_data(token):
+
+  data = {}
+
+  # Check if user is logged in
+  if (is_logged_in(token) == True):
+
+    # Get user 
+    logged_in_user = get_user_by_token(token)
+    email = logged_in_user['email']
+
+    # Get Stats
+    result = [0, 0, 0, 0, 0]
+    dataset = database_helper.get_page_view_history(email)
+    # Loop thorugh tuples and add second element to dbresult
+    for element in dataset:
+      result.append(element[1])
+    # Pop previously added zeros from the result
+    elements_count = len(dataset)
+    del result[:elements_count]
+
+    # Pass success data to dictionary
+    data['success'] = True
+    data['message'] = 'userstats'
+    data['data'] = result
 
   else:
     # Pass error data to dictionary

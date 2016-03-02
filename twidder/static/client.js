@@ -22,7 +22,8 @@ welcomeView = function() {
 // privat; injects profileView into activeView
 profileView = function() {
     document.getElementById("activeView").innerHTML = document.getElementById("profileView").innerHTML;
-    createGlobalRadarChart()
+    createRadarChart()
+    createBarChart()
     changeActiveProfileViewTab(localStorage.getItem('tab'));
 }
 
@@ -131,14 +132,17 @@ function signInUser() {
               //websocket.close()
               signOut();
             } else if (msg.message === 'OnlineCountChanged') {
-              chartJsChart.datasets[0].points[0].value = msg.data;
-              chartJsChart.update();
+              radarChart.datasets[0].points[0].value = msg.data;
+              radarChart.update();
             } else if (msg.message === 'MessageCountChanged') {
-              chartJsChart.datasets[0].points[1].value = msg.data;
-              chartJsChart.update();
+              radarChart.datasets[0].points[1].value = msg.data;
+              radarChart.update();
             } else if (msg.message === 'PageViewsChanged') {
-              chartJsChart.datasets[0].points[2].value = msg.data;
-              chartJsChart.update();
+              radarChart.datasets[0].points[2].value = msg.data;
+              radarChart.update();
+            } else if (msg.message === 'PageViewLastDayChanged') {
+              barChart.datasets[0].bars[4].value = msg.data;
+              barChart.update()
             }
           };
           // Error Handling
@@ -719,7 +723,7 @@ function checkPwdLength(password) {
     }
 }
 
-function createGlobalRadarChart() {
+function createRadarChart() {
 
     // Get Token. If Token is not available redirect user to welcomeView.
     var token = getTokenOrNull();
@@ -729,7 +733,7 @@ function createGlobalRadarChart() {
     }
 
     // chartjs: create instance of chart
-    var chartJsData = {
+    var radarData = {
         labels: ["OnlineUsers", "MessageCount", "PageViews"],
         datasets: [
             {
@@ -744,14 +748,14 @@ function createGlobalRadarChart() {
             }
         ]
     };
-    var chartJsCtx = document.getElementById("chartJsChart").getContext("2d");
+    var radarCtx = document.getElementById("radarChart").getContext("2d");
     // Create Global Variable which stores chart instance
-    chartJsChart = new Chart(chartJsCtx).Radar(chartJsData);
+    radarChart = new Chart(radarCtx).Radar(radarData);
 
     // Get Chart Data
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
     // Create asynchronous Get Request to Server Resource
-    con.open("GET", '/getchartstats/' + token + '/', true); 
+    con.open("GET", '/getradarchartdata/' + token + '/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -759,10 +763,64 @@ function createGlobalRadarChart() {
         // Parse the JSON response from the server
         var serverResponse = JSON.parse(con.responseText);
         if (serverResponse.success === true) {
-          chartJsChart.datasets[0].points[0].value = serverResponse.data.onlineUsers;
-          chartJsChart.datasets[0].points[1].value = serverResponse.data.postsOnWall;
-          chartJsChart.datasets[0].points[2].value = serverResponse.data.pageViews;
-          chartJsChart.update();
+          radarChart.datasets[0].points[0].value = serverResponse.data.onlineUsers;
+          radarChart.datasets[0].points[1].value = serverResponse.data.postsOnWall;
+          radarChart.datasets[0].points[2].value = serverResponse.data.pageViews;
+          radarChart.update();
+        } else {
+          console.log("Error fetching chart stats");
+        }
+      }
+    };
+    // Send
+    con.send();
+
+}
+
+function createBarChart() {
+
+    // Get Token. If Token is not available redirect user to welcomeView.
+    var token = getTokenOrNull();
+    if (token === null) {
+        welcomeView();
+        return false;
+    }
+
+    // chartjs: create instance of chart
+    var barData = {
+        labels: ["4d ago", "3d ago", "2d ago", "yesterday", "today"],
+        datasets: [
+            {
+                label: "Page Views",
+                fillColor: "rgba(220,220,220,0.5)",
+                strokeColor: "rgba(220,220,220,0.8)",
+                highlightFill: "rgba(220,220,220,0.75)",
+                highlightStroke: "rgba(220,220,220,1)",
+                data: [0, 0, 0, 0, 0]
+            }
+        ]
+    };
+    var barCtx = document.getElementById("barChart").getContext("2d");
+    // Create Global Variable which stores chart instance
+    barChart = new Chart(barCtx).Bar(barData);
+
+    // Get Chart Data
+    var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
+    // Create asynchronous Get Request to Server Resource
+    con.open("GET", '/getbarchartdata/' + token + '/', true); 
+    // Specify a function which is executed each time the readyState property changes
+    con.onreadystatechange = function() {
+      // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
+      if (con.readyState == 4 && con.status == 200) {
+        // Parse the JSON response from the server
+        var serverResponse = JSON.parse(con.responseText);
+        if (serverResponse.success === true) {
+          barChart.datasets[0].bars[0].value = serverResponse.data[0];
+          barChart.datasets[0].bars[1].value = serverResponse.data[1];
+          barChart.datasets[0].bars[2].value = serverResponse.data[2];
+          barChart.datasets[0].bars[3].value = serverResponse.data[3];
+          barChart.datasets[0].bars[4].value = serverResponse.data[4];
+          barChart.update();
         } else {
           console.log("Error fetching chart stats");
         }
