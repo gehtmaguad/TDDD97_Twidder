@@ -21,7 +21,7 @@
                              <input type="password" name="loginPassword" required><br>
                          </div>
                          <div class="formfield">
-                             <input type="submit" value="Submit">
+                             <input type="submit" id="loginSubmit" value="Submit">
                          </div>
                          <div class="valErrMsg" id="valErrMsgSigninForm"></div>
                     </form>
@@ -65,7 +65,7 @@
                              <input type="password" name="repeatPsw" required><br>
                          </div>
                          <div class="formfield">
-                             <input type="submit" value="Submit" required>
+                             <input type="submit" id="signupSubmit" value="Submit" required>
                          </div>
                          <div class="valErrMsg" id="valErrMsgSignupForm"></div>
                     </form>
@@ -214,7 +214,7 @@
 					<div id="signOutArea">
 						<h2>Sign Out</h2>
 						<div class="formfield">
-							<button onclick="signOut()">Sign Out</button>
+							<button id="signOutButton" onclick="signOut()">Sign Out</button>
 						</div>
 					</div>
 				</div>

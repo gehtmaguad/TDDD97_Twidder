@@ -580,16 +580,17 @@ def get_bar_chart_data(token):
     # Get Stats
     result = [0, 0, 0, 0, 0]
     dataset = database_helper.get_page_view_history(email)
-    # Loop thorugh tuples and add second element to dbresult
-    for element in dataset:
-      result.append(element[1])
-    # Pop previously added zeros from the result
-    elements_count = len(dataset)
-    del result[:elements_count]
-    # Check if user already hat a pagehit today
-    if (dataset[-1][0] != strftime("%Y%m%d", gmtime())):
-      del result[:1]
-      result.append(0)
+    if len(dataset) > 0:
+      # Loop thorugh tuples and add second element to dbresult
+      for element in dataset:
+        result.append(element[1])
+      # Pop previously added zeros from the result
+      elements_count = len(dataset)
+      del result[:elements_count]
+      # Check if user already hat a pagehit today
+      if (dataset[-1][0] != strftime("%Y%m%d", gmtime())):
+        del result[:1]
+        result.append(0)
 
     # Pass success data to dictionary
     data['success'] = True
