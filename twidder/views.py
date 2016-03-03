@@ -10,6 +10,7 @@ import json
 
 import string
 import random
+from time import gmtime, strftime
 
 logged_in_users = []
 password_length = 8
@@ -585,6 +586,10 @@ def get_bar_chart_data(token):
     # Pop previously added zeros from the result
     elements_count = len(dataset)
     del result[:elements_count]
+    # Check if user already hat a pagehit today
+    if (dataset[-1][0] != strftime("%Y%m%d", gmtime())):
+      del result[:1]
+      result.append(0)
 
     # Pass success data to dictionary
     data['success'] = True
