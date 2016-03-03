@@ -4,5 +4,8 @@ sudo apt-get install python-dev
 pip install gevent
 pip install gevent-websocket
 
+// Install Selenium
+pip install selenium
+
 // Create Dabatase from schema
 sqlite3 twidder.db < twidder.schema
