@@ -421,13 +421,31 @@ function injectHomePosts() {
             element.removeChild(element.firstChild);
           }
 
+          // Create a count helper variable
+          var count = 0;
           // Injects retrieved posts into html
           serverResponse.data.forEach( function (arrayItem)
           {
-            var para = document.createElement("p");
-            var text = document.createTextNode(arrayItem.sender_email + ": " + arrayItem.message);
-            para.appendChild(text);
-            element.appendChild(para);
+            // Create elements
+            var divElem = document.createElement("div");
+            divElem.style.lineHeight = "2";
+            var spanLeft = document.createElement("span");
+            var spanRight = document.createElement("span");
+            // Prepare para element for drag and drop
+            spanRight.setAttribute("id", "message" + count);
+            spanRight.setAttribute("draggable", "true");
+            spanRight.setAttribute("ondragstart", "drag(event)");
+            // Add text
+            var textLeft = document.createTextNode(arrayItem.sender_email + ": ");
+            var textRight = document.createTextNode(arrayItem.message);
+            spanLeft.appendChild(textLeft);
+            spanRight.appendChild(textRight);
+            // Add these child element to the parent element
+            divElem.appendChild(spanLeft);
+            divElem.appendChild(spanRight);
+            element.appendChild(divElem);
+            // Increment count
+            count++;
           });
         } else {
           document.getElementById('valErrMsgHomePostAreaForm').innerHTML = serverResponse.message;
@@ -514,14 +532,31 @@ function injectBrowsePosts() {
               element.removeChild(element.firstChild);
           }
 
+          // Create a count helper variable
+          var count = 0;
           // Injects retrieved posts into html
           serverResponse.data.forEach( function (arrayItem)
           {
-            var para = document.createElement("p");
-            var text = document.createTextNode(arrayItem.sender_email + ": " + arrayItem.message);
-            para.appendChild(text);
-
-            element.appendChild(para);
+            // Create elements
+            var divElem = document.createElement("div");
+            divElem.style.lineHeight = "2";
+            var spanLeft = document.createElement("span");
+            var spanRight = document.createElement("span");
+            // Prepare para element for drag and drop
+            spanRight.setAttribute("id", "message" + count);
+            spanRight.setAttribute("draggable", "true");
+            spanRight.setAttribute("ondragstart", "drag(event)");
+            // Add text
+            var textLeft = document.createTextNode(arrayItem.sender_email + ": ");
+            var textRight = document.createTextNode(arrayItem.message);
+            spanLeft.appendChild(textLeft);
+            spanRight.appendChild(textRight);
+            // Add these child element to the parent element
+            divElem.appendChild(spanLeft);
+            divElem.appendChild(spanRight);
+            element.appendChild(divElem);
+            // Increment count
+            count++;
           });
 
         } else {
@@ -829,4 +864,18 @@ function createBarChart() {
     // Send
     con.send();
 
+}
+
+function allowDrop(ev) {
+    ev.preventDefault();
+}
+
+function drag(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
+}
+
+function drop(ev) {
+    ev.preventDefault();
+    var data = ev.dataTransfer.getData("text");
+    ev.target.value = document.getElementById(data).innerHTML;
 }

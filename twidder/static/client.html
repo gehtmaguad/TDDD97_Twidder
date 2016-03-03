@@ -97,11 +97,11 @@
 						<form name="homePostAreaForm" onsubmit="return postMessageFromHomeTab()">
 							<div class="formfield">
 							    <label>To Email:</label>
-							    <input type="email" name="toEmail" required><br>
+							    <input type="email" name="toEmail" ondrag="return false"  ondrop="return false" required><br>
 							</div>
 							<div class="formfield">
 								<label>Post:</label>
-								<textarea class="messageTextArea" name="post" required></textarea><br>
+								<textarea class="messageTextArea" name="post" ondrop="drop(event)" ondragover="allowDrop(event)" required></textarea><br>
 							</div>
 							<div class="formfield">
 								<input class="messageSubmitField" type="submit" value="Submit" required>
@@ -118,6 +118,7 @@
 					</div>
 					<div id="homeMessageArea">
 						<h2>Message Wall</h2>
+						<p>Format is Email: Message. You can use drag and drop functionality to drag a Message and drop it into the Post Textarea.</p>
 						<div id='homeMessageWall'></div>
 					</div>
 				</div>
@@ -165,7 +166,7 @@
 							<form name="browsePostAreaForm" onsubmit="return postMessageFromBrowseTab()">
 								<div class="formfield">
 									<label>Post:</label>
-									<textarea class="messageTextArea" name="post" required></textarea><br>
+									<textarea class="messageTextArea" name="post" ondrop="drop(event)" ondragover="allowDrop(event)" required></textarea><br>
 								</div>
 								<div class="formfield">
 									<input class="messageSubmitField" type="submit" value="Submit" required>
@@ -182,6 +183,7 @@
 						</div>
 						<div id="browseMessageArea">
 							<h2>Message Wall</h2>
+							<p>Format is Email: Message. You can use drag and drop functionality to drag a Message and drop it into the Post Textarea.</p>
 							<div id='browseMessageWall'></div>
 						</div>
 					</div>
