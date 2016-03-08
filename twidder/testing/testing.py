@@ -40,12 +40,12 @@ class Testing(unittest.TestCase):
     # Navigate to page
     self.driver.get("http://127.0.0.1:5000/")
 
-  def atest_title(self):
+  def test_title(self):
     driver = self.driver
     # Check if title is correct
     self.assertEqual(self.title, driver.title)
 
-  def atest_login_and_logout(self):
+  def test_login_and_logout(self):
     driver = self.driver
     # Get login fields
     loginEmailElement = driver.find_element_by_name("loginEmail")
@@ -76,7 +76,7 @@ class Testing(unittest.TestCase):
       result = "NoSuchElementException"
     self.assertEqual("gotLoginEmailElement", result)
 
-  def atest_login_with_wrong_password(self):
+  def test_login_with_wrong_password(self):
     driver = self.driver
     # Get login fields
     loginEmailElement = driver.find_element_by_name("loginEmail")
@@ -140,7 +140,7 @@ class Testing(unittest.TestCase):
       result = "NoSuchElementException"
     self.assertEqual("gotLoginEmailElement", result)
 
-  def atest_sign_up_with_existing_mail(self):
+  def test_sign_up_with_existing_mail(self):
     driver = self.driver
 
     # Get signup fields
@@ -170,7 +170,7 @@ class Testing(unittest.TestCase):
     # Check if error message is correct
     self.assertEqual(self.signup_err_msg, errorMessageText)
 
-  def atest_message_posting(self):
+  def test_message_posting(self):
     driver = self.driver
 
     ## Login

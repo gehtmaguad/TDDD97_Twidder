@@ -11,6 +11,12 @@ create table user (
   salt text not null
 );
 
+// decrypted password is test1234
+insert into user (email, password, firstname, familyname, gender, city, country, salt) values
+  ('foo@bar.com', '22dd98399528f5fd882b877869994e54faf179d117db0c525d5ae300218f06bf', 'sophie', 'whatever', 'female', 'vienna', 'austria', 'mnvyQGmyAuyjaRDyjOS8EBxbBGaPG/6uzkoEZglJHb3WOulwosWEc0rn7p67eI+DL4SdOwQhneLB0TAVg0FKMbmq6/enrA2oYS5VciPc0DmOL+5bUGUnPhfINKbzf64O/n1UWZjfDU7cRrleMY02GMg0Alz0nuORnatrzrY+9vU=');
+insert into user (email, password, firstname, familyname, gender, city, country, salt) values
+  ('foo2@bar.com', '22dd98399528f5fd882b877869994e54faf179d117db0c525d5ae300218f06bf', 'foo', 'bar', 'male', 'vienna', 'austria', 'mnvyQGmyAuyjaRDyjOS8EBxbBGaPG/6uzkoEZglJHb3WOulwosWEc0rn7p67eI+DL4SdOwQhneLB0TAVg0FKMbmq6/enrA2oYS5VciPc0DmOL+5bUGUnPhfINKbzf64O/n1UWZjfDU7cRrleMY02GMg0Alz0nuORnatrzrY+9vU=');
+
 drop table if exists wall;
 create table wall (
   id integer primary key autoincrement,
@@ -19,9 +25,9 @@ create table wall (
   message text not null
 );
 
-insert into wall (from_email, to_email, message) values ('spohie@test.com', 'spohie@test.com', 'from sophie to sophie');
-insert into wall (from_email, to_email, message) values ('spohie@test.com', 'foo@bar.com', 'from sophie to foo');
-insert into wall (from_email, to_email, message) values ('foo@bar.com', 'spohie@test.com', 'from foo to sophie');
+insert into wall (from_email, to_email, message) values ('foo@bar.com', 'foo@bar.com', 'from foo to foo');
+insert into wall (from_email, to_email, message) values ('foo@bar.com', 'foo2@bar.com', 'from foo to foo2');
+insert into wall (from_email, to_email, message) values ('foo2@bar.com', 'foo@bar.com', 'from foo2 to foo');
 
 drop table if exists pageviews;
 create table pageviews (
@@ -30,6 +36,6 @@ create table pageviews (
   timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-insert into pageviews (email) values ('spohie@test.com');
-insert into pageviews (email) values ('spohie@test.com');
 insert into pageviews (email) values ('foo@bar.com');
+insert into pageviews (email) values ('foo@bar.com');
+insert into pageviews (email) values ('foo2@bar.com');
