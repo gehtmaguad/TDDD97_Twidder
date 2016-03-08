@@ -8,6 +8,10 @@ from twidder import app
 import database_helper
 import json
 
+import os
+import hashlib
+import base64
+
 import string
 import random
 from time import gmtime, strftime
@@ -79,8 +83,16 @@ def sign_in():
 
   # Check if database call was successfull
   if (dataset != None):
+    salt = dataset[8]
+    # Prepend the salt to password
+    salted_password = salt + password
+    # Hash the salted password
+    m = hashlib.sha256()
+    m.update(salted_password)
+    hashed_password = m.hexdigest()
+
     # Check if password from form is same as in database
-    if (password == dataset[2]):
+    if (hashed_password == dataset[2]):
 
       # Check if user is already logged in:
       if (is_logged_in_by_email(email) == True):
@@ -157,9 +169,19 @@ def sign_up():
     # return the dataset as json data
     return json.dumps(data)
 
+  # Create a salt
+  salt = base64.b64encode(os.urandom(128))
+  salt = salt.decode("utf-8")
+  # Prepend the salt to password
+  salted_password = salt + password
+  # Hash the salted password
+  m = hashlib.sha256()
+  m.update(salted_password)
+  hashed_password = m.hexdigest()
+
   # Add User to the database
   database_helper.add_user( \
-    email, password, firstname, familyname, gender, city, country )
+    email, hashed_password, firstname, familyname, gender, city, country, salt )
 
   # Pass success data to dictionary
   data['success'] = True

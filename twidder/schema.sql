@@ -7,13 +7,9 @@ create table user (
   familyname text not null,
   gender text not null,
   city text not null,
-  country text not null
+  country text not null,
+  salt text not null
 );
-
-insert into user (email, password, firstname, familyname, gender, city, country) values
-  ('spohie@test.com', 'test1234', 'sophie', 'whatever', 'female', 'vienna', 'austria');
-insert into user (email, password, firstname, familyname, gender, city, country) values
-  ('foo@bar.com', 'test1234', 'foo', 'bar', 'male', 'vienna', 'austria');
 
 drop table if exists wall;
 create table wall (

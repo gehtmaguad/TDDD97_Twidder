@@ -16,12 +16,12 @@ def get_db():
     db = g.db = connect_db()
   return db
 
-def add_user(email, password, firstname, familyname, gender, city, country):
+def add_user(email, password, firstname, familyname, gender, city, country, salt):
   conn = get_db()
   cursor = conn.cursor()
   cursor.execute('INSERT INTO user (email, password, firstname, \
-    familyname, gender, city, country) values (?,?,?,?,?,?,?)', \
-    (email, password, firstname, familyname, gender, city, country))
+    familyname, gender, city, country, salt) values (?,?,?,?,?,?,?,?)', \
+    (email, password, firstname, familyname, gender, city, country, salt))
   conn.commit()
 
 def get_user(email):
@@ -85,6 +85,6 @@ def get_page_view_history(email):
     GROUP BY strftime(\'%d\', timestamp) ORDER BY timestamp', (email,))
   result = cursor.fetchall()
   return result
- 
+
 def close():
   get_db().close()
