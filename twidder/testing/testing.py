@@ -6,6 +6,16 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 # Import NoSuchElementException Exception from selenium
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import ElementNotVisibleException
+
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.common.by import By
+import time
+from selenium.webdriver import ActionChains
+
+import string
+import random
 
 class Testing(unittest.TestCase):
 
@@ -23,8 +33,10 @@ class Testing(unittest.TestCase):
   familyName = "Bar"
   city = "FooBar"
   country = "FooBar"
-  email = "foo@asdfbasfd.com"
+  random_string = ''.join(random.choice(string.ascii_uppercase) for _ in range(8))
+  email = "foo@" + random_string + ".com"
   existing_email = "foo@bar.com"
+  message = "TESTMESSAGE" + ''.join(random.choice(string.ascii_uppercase) for _ in range(20))
 
   def setUp(self):
     # Create instance of firefox webdriver
@@ -112,11 +124,11 @@ class Testing(unittest.TestCase):
     # Try to get loginEmailElement, if thats not possible
     # user is logged in because he got redirected 
     try:
-      driver.find_element_by_name("loginEmail")
-      result = "gotLoginEmailElement"
+      driver.find_element_by_id("tabular_bar")
+      result = "gotTabularBarElement"
     except NoSuchElementException, e:
       result = "NoSuchElementException"
-    self.assertEqual("NoSuchElementException", result)
+    self.assertEqual("gotTabularBarElement", result)
 
     # Switch to account tab
     driver.find_element_by_id("accountButton").click()
@@ -160,6 +172,70 @@ class Testing(unittest.TestCase):
     errorMessageText = driver.find_element_by_id("valErrMsgSignupForm").text
     # Check if error message is correct
     self.assertEqual(self.signup_err_msg, errorMessageText)
+
+  def test_message_posting(self):
+    driver = self.driver
+
+    ## Login
+    # Get login fields
+    loginEmailElement = driver.find_element_by_name("loginEmail")
+    loginPasswordElement = driver.find_element_by_name("loginPassword")
+    # Enter login credentials
+    loginEmailElement.send_keys(self.user)
+    loginPasswordElement.send_keys(self.password)
+    # Submit form
+    driver.find_element_by_id("loginSubmit").click()
+    # Try to get loginEmailElement again, if thats not possible
+    # user is logged in because he got redirected to another page
+    try:
+      driver.find_element_by_name("loginEmail")
+      result = "gotLoginEmailElement"
+    except NoSuchElementException, e:
+      result = "NoSuchElementException"
+    self.assertEqual("NoSuchElementException", result)
+
+    ## Search for user
+    # Switch to browse tab
+    driver.find_element_by_id("browseButton").click()
+    # Get email search field
+    searchEmailElement = driver.find_element_by_name("findByEmail")
+    # Enter email address
+    searchEmailElement.send_keys(self.user)
+    # Submit form
+    driver.find_element_by_id("searchSubmit").click()
+
+    ## Post message to wall
+
+    # Get post message field
+    postMessageElement = driver.find_element_by_id("browsePost")
+    # Post message
+    postMessageElement.send_keys(self.message)
+    # Submit form
+    driver.find_element_by_id("postMessageSubmit").click()
+
+    # Check for message on the wall
+    result = ""
+    try:
+      driver.find_elements_by_xpath("//*[contains(text(), " + self.message + ")]")
+      result = "gotTextElement"
+    except NoSuchElementException, e:
+      result = "NoSuchElementException"
+    self.assertEqual("gotTextElement", result)
+
+    ## Logout
+    # Switch to account tab
+    driver.find_element_by_id("accountButton").click()
+    # LogOut
+    driver.find_element_by_id("signOutButton").click()
+    # Try to get loginEmailElement again, if thats not possible
+    # user is still logged in because he got not redirected to login page
+    result = ""
+    try:
+      driver.find_element_by_name("loginEmail")
+      result = "gotLoginEmailElement"
+    except NoSuchElementException, e:
+      result = "NoSuchElementException"
+    self.assertEqual("gotLoginEmailElement", result)
 
 
   def tearDown(self):

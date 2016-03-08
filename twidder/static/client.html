@@ -144,7 +144,7 @@
 								<input type="email" name="findByEmail" required><br>
 							</div>
 							<div class="formfield">
-								<input type="submit" value="Submit" required>
+								<input type="submit" id="searchSubmit" value="Submit" required>
 							</div>
 							<div class="valErrMsg" id="valErrMsgSearchUserForm"></div>
 						</form>
@@ -166,10 +166,10 @@
 							<form name="browsePostAreaForm" onsubmit="return postMessageFromBrowseTab()">
 								<div class="formfield">
 									<label>Post:</label>
-									<textarea class="messageTextArea" name="post" ondrop="drop(event)" ondragover="allowDrop(event)" required></textarea><br>
+									<textarea class="messageTextArea" id="browsePost" name="post" ondrop="drop(event)" ondragover="allowDrop(event)" required></textarea><br>
 								</div>
 								<div class="formfield">
-									<input class="messageSubmitField" type="submit" value="Submit" required>
+									<input class="messageSubmitField" id="postMessageSubmit" type="submit" value="Submit" required>
 								</div>
 								<div class="valErrMsg" id="valErrMsgBrowsePostAreaForm"></div>
 								<div class="valSucMsg" id="valSucMsgBrowsePostAreaForm"></div>

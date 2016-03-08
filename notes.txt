@@ -1,3 +1,5 @@
+// Proxing for Drag and Drop with image
+
 // Install gevent and gevent-websocket
 In order to install gevent the python-dev packages must be installed
 sudo apt-get install python-dev
