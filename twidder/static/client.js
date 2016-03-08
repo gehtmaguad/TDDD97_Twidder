@@ -872,6 +872,9 @@ function allowDrop(ev) {
 
 function drag(ev) {
     ev.dataTransfer.setData("text", ev.target.id);
+    var img = new Image(); 
+    img.src = 'arrow.png'; 
+    ev.dataTransfer.setDragImage(img, 10, 10);
 }
 
 function drop(ev) {
