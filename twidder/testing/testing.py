@@ -1,4 +1,4 @@
-# Impor python test framework unittest
+# Import python test framework unittest
 import unittest
 # Import selenium.webdriver module which provides all the WebDriver implementations
 from selenium import webdriver
@@ -8,14 +8,10 @@ from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementNotVisibleException
 
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.by import By
-import time
-from selenium.webdriver import ActionChains
-
+# Import additional python libraries
 import string
 import random
+import time
 
 class Testing(unittest.TestCase):
 
@@ -35,8 +31,8 @@ class Testing(unittest.TestCase):
   country = "FooBar"
   random_string = ''.join(random.choice(string.ascii_uppercase) for _ in range(8))
   email = "foo@" + random_string + ".com"
-  existing_email = "foo@bar.com"
-  message = "TESTMESSAGE" + ''.join(random.choice(string.ascii_uppercase) for _ in range(20))
+  existing_email = user
+  message = "testmessage" + ''.join(random.choice(string.ascii_uppercase) for _ in range(20))
 
   def setUp(self):
     # Create instance of firefox webdriver
@@ -44,12 +40,12 @@ class Testing(unittest.TestCase):
     # Navigate to page
     self.driver.get("http://127.0.0.1:5000/")
 
-  def test_title(self):
+  def atest_title(self):
     driver = self.driver
     # Check if title is correct
     self.assertEqual(self.title, driver.title)
 
-  def test_login_and_logout(self):
+  def atest_login_and_logout(self):
     driver = self.driver
     # Get login fields
     loginEmailElement = driver.find_element_by_name("loginEmail")
@@ -80,7 +76,7 @@ class Testing(unittest.TestCase):
       result = "NoSuchElementException"
     self.assertEqual("gotLoginEmailElement", result)
 
-  def test_login_with_wrong_password(self):
+  def atest_login_with_wrong_password(self):
     driver = self.driver
     # Get login fields
     loginEmailElement = driver.find_element_by_name("loginEmail")
@@ -121,8 +117,9 @@ class Testing(unittest.TestCase):
 
     # Submit form -> User should get redirected
     driver.find_element_by_id("signupSubmit").click()
-    # Try to get loginEmailElement, if thats not possible
-    # user is logged in because he got redirected 
+    # Delay program in order to make sure everything is loaded
+    time.sleep(2)
+    # try to get tabular_bar element which proofs that user is logged in
     try:
       driver.find_element_by_id("tabular_bar")
       result = "gotTabularBarElement"
@@ -143,7 +140,7 @@ class Testing(unittest.TestCase):
       result = "NoSuchElementException"
     self.assertEqual("gotLoginEmailElement", result)
 
-  def test_sign_up_with_existing_mail(self):
+  def atest_sign_up_with_existing_mail(self):
     driver = self.driver
 
     # Get signup fields
@@ -173,7 +170,7 @@ class Testing(unittest.TestCase):
     # Check if error message is correct
     self.assertEqual(self.signup_err_msg, errorMessageText)
 
-  def test_message_posting(self):
+  def atest_message_posting(self):
     driver = self.driver
 
     ## Login
@@ -236,7 +233,6 @@ class Testing(unittest.TestCase):
     except NoSuchElementException, e:
       result = "NoSuchElementException"
     self.assertEqual("gotLoginEmailElement", result)
-
 
   def tearDown(self):
     # Close Broser Tab
