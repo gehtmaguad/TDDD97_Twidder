@@ -254,6 +254,7 @@ def change_password():
 
   # Get data from form
   token = request.json['token']
+  hashvalue = request.json['hashvalue']
   old_password = request.json['oldPassword']
   new_password = request.json['newPassword']
 
@@ -273,6 +274,13 @@ def change_password():
     # Get user 
     logged_in_user = get_user_by_token(token)
     email = logged_in_user['email']
+    privatekey = logged_in_user['privatekey']
+
+    # Compare hash values
+    if (hashvalue != hash_data(privatekey + token)):
+      data['success'] = False
+      data['message'] = 'Error in hash value'
+      return json.dumps(data)
 
     # Get current password and salt from database
     result = database_helper.get_user(email)
@@ -307,8 +315,8 @@ def change_password():
   return json.dumps(data)
 
 # Get user data by token
-@app.route('/getuserdatabytoken/<token>', methods=['GET'])
-def get_user_data_by_token(token):
+@app.route('/getuserdatabytoken/<token>/<hashvalue>/', methods=['GET'])
+def get_user_data_by_token(token, hashvalue):
 
   # Create empty dictionary for storing return data
   data = {}
@@ -318,6 +326,14 @@ def get_user_data_by_token(token):
     # Get user 
     logged_in_user = get_user_by_token(token)
     email = logged_in_user['email']
+    privatekey = logged_in_user['privatekey']
+
+    # Compare hash values
+    if (hashvalue != hash_data(privatekey + token)):
+      data['success'] = False
+      data['message'] = 'Error in hash value'
+      return json.dumps(data)
+
     user = get_user_data(email)
     if (user == None):
       # Pass error data to dictionary
@@ -339,8 +355,8 @@ def get_user_data_by_token(token):
   return json.dumps(data)
 
 # Get user data by email
-@app.route('/getuserdatabyemail/<token>/<email>/', methods=['GET'])
-def get_user_data_by_email(token, email):
+@app.route('/getuserdatabyemail/<token>/<email>/<hashvalue>/', methods=['GET'])
+def get_user_data_by_email(token, email, hashvalue):
 
   # Create empty dictionary for storing return data
   data = {}
@@ -348,7 +364,18 @@ def get_user_data_by_email(token, email):
   # Check if user is logged in
   if (is_logged_in(token) == True):
 
-    # Get user
+    # Get user who initiated request
+    logged_in_user = get_user_by_token(token)
+    privatekey = logged_in_user['privatekey']
+
+    # Compare hash values
+    if (hashvalue != hash_data(privatekey + token)):
+      data['success'] = False
+      data['message'] = 'Error in hash value'
+      # return the dataset as json data
+      return json.dumps(data)
+
+    # Get requested user
     user = get_user_data(email)
     if (user == None):
       # Pass error data to dictionary
@@ -400,8 +427,8 @@ def get_user_data_by_email(token, email):
   return json.dumps(data)
 
 # Check if user exists
-@app.route('/gettrueifuserexists/<token>/<email>/', methods=['GET'])
-def get_true_if_user_exists(token, email):
+@app.route('/gettrueifuserexists/<token>/<email>/<hashvalue>/', methods=['GET'])
+def get_true_if_user_exists(token, email, hashvalue):
 
   # Create empty dictionary for storing return data
   data = {}
@@ -409,7 +436,18 @@ def get_true_if_user_exists(token, email):
   # Check if user is logged in
   if (is_logged_in(token) == True):
 
-    # Get user
+    # Get user who initiated request
+    logged_in_user = get_user_by_token(token)
+    privatekey = logged_in_user['privatekey']
+
+    # Compare hash values
+    if (hashvalue != hash_data(privatekey + token)):
+      data['success'] = False
+      data['message'] = 'Error in hash value'
+      # return the dataset as json data
+      return json.dumps(data)
+
+    # Get requested user
     user = get_user_data(email)
     if (user == None):
       # Pass error data to dictionary
@@ -438,6 +476,7 @@ def post_message():
   token = request.json['token']
   receiver_email = request.json['receiverEmail']
   message = request.json['message']
+  hashvalue = request.json['hashvalue']
 
   # Create empty dictionary for storing return data
   data = {}
@@ -456,6 +495,13 @@ def post_message():
     # Get user 
     logged_in_user = get_user_by_token(token)
     sender_email = logged_in_user['email']
+    privatekey = logged_in_user['privatekey']
+
+    # Compare hash values
+    if (hashvalue != hash_data(privatekey + token)):
+      data['success'] = False
+      data['message'] = 'Error in hash value'
+      return json.dumps(data)
 
     # Save message to database
     database_helper.post_message(sender_email, receiver_email, message)
@@ -488,8 +534,8 @@ def post_message():
   return json.dumps(data)
 
 # Get mesage by token
-@app.route('/getusermessagesbytoken/<token>/', methods=['GET'])
-def get_user_messages_by_token(token):
+@app.route('/getusermessagesbytoken/<token>/<hashvalue>/', methods=['GET'])
+def get_user_messages_by_token(token, hashvalue):
 
   # Create empty dictionary for storing return data
   data = {}
@@ -502,6 +548,13 @@ def get_user_messages_by_token(token):
     # Get user 
     logged_in_user = get_user_by_token(token)
     email = logged_in_user['email']
+    privatekey = logged_in_user['privatekey']
+
+    # Compare hash values
+    if (hashvalue != hash_data(privatekey + token)):
+      data['success'] = False
+      data['message'] = 'Error in hash value'
+      return json.dumps(data)
 
     # Get Messages for logged in user and append them to messages dict
     result = database_helper.get_messages(email)
@@ -526,8 +579,8 @@ def get_user_messages_by_token(token):
   return json.dumps(data)
 
 # Get messages by email
-@app.route('/getusermessagesbyemail/<token>/<email>/', methods=['GET'])
-def get_user_messages_by_email(token, email):
+@app.route('/getusermessagesbyemail/<token>/<email>/<hashvalue>/', methods=['GET'])
+def get_user_messages_by_email(token, email, hashvalue):
 
   # Create empty dictionary for storing return data
   data = {}
@@ -546,6 +599,16 @@ def get_user_messages_by_email(token, email):
 
   # Check if user is logged in
   if (is_logged_in(token) == True):
+    # Get user 
+    logged_in_user = get_user_by_token(token)
+    privatekey = logged_in_user['privatekey']
+
+    # Compare hash values
+    if (hashvalue != hash_data(privatekey + token)):
+      data['success'] = False
+      data['message'] = 'Error in hash value'
+      return json.dumps(data)
+
 
     result = database_helper.get_messages(email)
     for element in result:
@@ -569,8 +632,8 @@ def get_user_messages_by_email(token, email):
   return json.dumps(data)
 
 # Get data for radar chart
-@app.route('/getradarchartdata/<token>/', methods=['GET'])
-def get_radar_chart_data(token):
+@app.route('/getradarchartdata/<token>/<hashvalue>/', methods=['GET'])
+def get_radar_chart_data(token, hashvalue):
 
   data = {}
 
@@ -580,6 +643,13 @@ def get_radar_chart_data(token):
     # Get user 
     logged_in_user = get_user_by_token(token)
     email = logged_in_user['email']
+    privatekey = logged_in_user['privatekey']
+
+    # Compare hash values
+    if (hashvalue != hash_data(privatekey + token)):
+      data['success'] = False
+      data['message'] = 'Error in hash value'
+      return json.dumps(data)
 
     # Get Stats
     stats = {}
@@ -600,8 +670,8 @@ def get_radar_chart_data(token):
   return json.dumps(data)
 
 # Get data for radar chart
-@app.route('/getbarchartdata/<token>/', methods=['GET'])
-def get_bar_chart_data(token):
+@app.route('/getbarchartdata/<token>/<hashvalue>/', methods=['GET'])
+def get_bar_chart_data(token, hashvalue):
 
   data = {}
 
@@ -611,6 +681,13 @@ def get_bar_chart_data(token):
     # Get user 
     logged_in_user = get_user_by_token(token)
     email = logged_in_user['email']
+    privatekey = logged_in_user['privatekey']
+
+    # Compare hash values
+    if (hashvalue != hash_data(privatekey + token)):
+      data['success'] = False
+      data['message'] = 'Error in hash value'
+      return json.dumps(data)
 
     # Get Stats
     result = [0, 0, 0, 0, 0]

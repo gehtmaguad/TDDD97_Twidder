@@ -309,12 +309,17 @@ function resetPassword() {
         return false;
     }
 
+    // Create Hash with data and privatekey
+    var privatekey = localStorage.getItem("privatekey")
+    var hashvalue = sha256(privatekey + token);
+
     // Get Password Form Values and create javascript object
     userdata = {
       oldPassword:document.forms['renewPwdForm']['oldPassword'].value,
       newPassword:document.forms['renewPwdForm']['newPassword'].value,
       repeatNewPsw:document.forms['renewPwdForm']['repeatNewPsw'].value,
-      token:token
+      token:token,
+      hashvalue:hashvalue
     }
 
     // Check Password Length
@@ -369,9 +374,14 @@ function injectHomeUserData() {
         return false;
     }
 
+    // Create Hash with data and privatekey
+    var privatekey = localStorage.getItem("privatekey")
+    var hashvalue = sha256(privatekey + token);
+
     // Get UserData from Server
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
-    con.open("GET", '/getuserdatabytoken/' + token, true); // Create asynchronous Get Request to Server Resource
+    // Create asynchronous Get Request to Server Resource
+    con.open("GET", '/getuserdatabytoken/' + token + '/' + hashvalue + '/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -409,12 +419,14 @@ function injectHomePosts() {
         return false;
     }
 
-    var userdata = {token:token}
+    // Create Hash with data and privatekey
+    var privatekey = localStorage.getItem("privatekey")
+    var hashvalue = sha256(privatekey + token);
 
     // Get UserData from Server
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
     // Create asynchronous Post Request to Server Resource
-    con.open("GET", '/getusermessagesbytoken/' + token + '/', true); 
+    con.open("GET", '/getusermessagesbytoken/' + token + '/' + hashvalue + '/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -475,13 +487,17 @@ function injectBrowseUserData(userdata) {
         return false;
     }
 
+    // Create Hash with data and privatekey
+    var privatekey = localStorage.getItem("privatekey")
+    var hashvalue = sha256(privatekey + token);
+
     // Get Email from LocalStorage
     var email = localStorage.getItem('toEmail');
 
     // Get UserData from Server
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
     // Create asynchronous Get Request to Server Resource
-    con.open("GET", '/getuserdatabyemail/' + token + '/' + email + '/', true); 
+    con.open("GET", '/getuserdatabyemail/' + token + '/' + email + '/' + hashvalue + '/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -518,13 +534,17 @@ function injectBrowsePosts() {
         return false;
     }
 
+    // Create Hash with data and privatekey
+    var privatekey = localStorage.getItem("privatekey")
+    var hashvalue = sha256(privatekey + token);
+
     // Get Email from LocalStorage
     var email = localStorage.getItem('toEmail');
 
     // Get UserData from Server
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
     // Create asynchronous Get Request to Server Resource
-    con.open("GET", '/getusermessagesbyemail/' + token + '/' + email + '/', true); 
+    con.open("GET", '/getusermessagesbyemail/' + token + '/' + email + '/' + hashvalue + '/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -588,6 +608,10 @@ function postMessageFromHomeTab() {
         return false;
     }
 
+    // Create Hash with data and privatekey
+    var privatekey = localStorage.getItem("privatekey")
+    var hashvalue = sha256(privatekey + token);
+
     // Get Form Value
     var post = document.forms['homePostAreaForm']['post'].value;
     var toEmail = document.forms['homePostAreaForm']['toEmail'].value;
@@ -596,7 +620,8 @@ function postMessageFromHomeTab() {
     userdata = {
       token:token,
       message:post,
-      receiverEmail:toEmail
+      receiverEmail:toEmail,
+      hashvalue:hashvalue
     }
 
     // Get UserData from Server
@@ -613,10 +638,6 @@ function postMessageFromHomeTab() {
           // Inject data into html
           document.getElementById('valErrMsgHomePostAreaForm').innerHTML = "";
           document.getElementById('valSucMsgHomePostAreaForm').innerHTML = "Message posted!";
-          // TODO: Clear Form if success?
-          // TODO: Clear Error or Success Message when switched away and back to this Tab?
-          //document.forms['homePostAreaForm']['post'].value = " ";
-          //document.forms['homePostAreaForm']['toEmail'].value = " ";
           // Get Posts in order to show newly created posts
           injectHomePosts();
         } else {
@@ -643,6 +664,11 @@ function postMessageFromBrowseTab() {
         welcomeView();
         return false;
     }
+
+    // Create Hash with data and privatekey
+    var privatekey = localStorage.getItem("privatekey")
+    var hashvalue = sha256(privatekey + token);
+
     // Get Data
     var post = document.forms['browsePostAreaForm']['post'].value;
     var toEmail = localStorage.getItem('toEmail');
@@ -651,7 +677,8 @@ function postMessageFromBrowseTab() {
     var userdata = {
       token:token,
       message:post,
-      receiverEmail:toEmail
+      receiverEmail:toEmail,
+      hashvalue:hashvalue
     }
 
     // Get UserData from Server
@@ -668,9 +695,6 @@ function postMessageFromBrowseTab() {
           // Inject data into html
           document.getElementById('valErrMsgBrowsePostAreaForm').innerHTML = "";
           document.getElementById('valSucMsgBrowsePostAreaForm').innerHTML = "Message posted!";
-          // TODO: Clear form if success?
-          // TODO: Clear Error or Success Message when switched away and back to this Tab?
-          //document.forms['browsePostAreaForm']['post'].value = " ";
           // Get Posts in order to show newly created posts
           injectBrowsePosts();
         } else {
@@ -697,6 +721,10 @@ function displayUser() {
         return false;
     }
 
+    // Create Hash with data and privatekey
+    var privatekey = localStorage.getItem("privatekey")
+    var hashvalue = sha256(privatekey + token);
+
     // Get email and save it in localStorage
     var email = document.forms['searchUserForm']['findByEmail'].value;
     localStorage.setItem('toEmail', email);
@@ -704,7 +732,7 @@ function displayUser() {
     // Check if the user entered in the search form exists
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
     // Create asynchronous Get Request to Server Resource
-    con.open("GET", '/gettrueifuserexists/' + token + '/' + email + '/', true); 
+    con.open("GET", '/gettrueifuserexists/' + token + '/' + email + '/' + hashvalue + '/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -767,6 +795,7 @@ function checkPwdLength(password) {
     }
 }
 
+// private; create radar chart
 function createRadarChart() {
 
     // Get Token. If Token is not available redirect user to welcomeView.
@@ -775,6 +804,10 @@ function createRadarChart() {
         welcomeView();
         return false;
     }
+
+    // Create Hash with data and privatekey
+    var privatekey = localStorage.getItem("privatekey")
+    var hashvalue = sha256(privatekey + token);
 
     // chartjs: create instance of chart
     var radarData = {
@@ -799,7 +832,7 @@ function createRadarChart() {
     // Get Chart Data
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
     // Create asynchronous Get Request to Server Resource
-    con.open("GET", '/getradarchartdata/' + token + '/', true); 
+    con.open("GET", '/getradarchartdata/' + token + '/' + hashvalue + '/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -821,6 +854,7 @@ function createRadarChart() {
 
 }
 
+// private; create bar chart
 function createBarChart() {
 
     // Get Token. If Token is not available redirect user to welcomeView.
@@ -829,6 +863,10 @@ function createBarChart() {
         welcomeView();
         return false;
     }
+
+    // Create Hash with data and privatekey
+    var privatekey = localStorage.getItem("privatekey")
+    var hashvalue = sha256(privatekey + token);
 
     // chartjs: create instance of chart
     var barData = {
@@ -851,7 +889,7 @@ function createBarChart() {
     // Get Chart Data
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
     // Create asynchronous Get Request to Server Resource
-    con.open("GET", '/getbarchartdata/' + token + '/', true); 
+    con.open("GET", '/getbarchartdata/' + token + '/' + hashvalue + '/', true); 
     // Specify a function which is executed each time the readyState property changes
     con.onreadystatechange = function() {
       // Only execute the following code if readyState is in State 4 and the Request is 200 / OK
@@ -875,17 +913,16 @@ function createBarChart() {
 
 }
 
+// private; drag and drop functions
 function allowDrop(ev) {
     ev.preventDefault();
 }
-
 function drag(ev) {
     ev.dataTransfer.setData("text", ev.target.id);
     var img = new Image(); 
     img.src = 'arrow.png'; 
     ev.dataTransfer.setDragImage(img, 10, 10);
 }
-
 function drop(ev) {
     ev.preventDefault();
     var data = ev.dataTransfer.getData("text");
