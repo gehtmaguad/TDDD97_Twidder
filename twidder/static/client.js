@@ -113,6 +113,8 @@ function signInUser() {
         if (serverResponse.success === true) {
           // Set Session Token
           localStorage.setItem("token", serverResponse.data);
+          // Set Private Key
+          localStorage.setItem("privatekey", serverResponse.privatekey);
           // Redirect User to profileView
           profileView();
 
@@ -222,6 +224,8 @@ function signUpUser() {
               if (innerServerResponse.success === true) {
                 // Set Session Token
                 localStorage.setItem("token", innerServerResponse.data);
+                // Set Private Key
+                localStorage.setItem("privatekey", innerServerResponse.privatekey);
                 // Redirect User to profileView
                 profileView();
               } else {
@@ -258,12 +262,16 @@ function signOut() {
         return false;
     }
 
+    // Create Hash with data and privatekey
+    var privatekey = localStorage.getItem("privatekey")
+    var hashvalue = sha256(privatekey + token);
+
     // Create javascript object
     var userdata = {
-      token:token
+      token:token,
+      hashvalue:hashvalue
     }
 
-    // Renew password
     var con = new XMLHttpRequest(); // Create XMLHttpRequest Object
     con.open("POST", '/signout/', true); // Create asynchronous Post Request to Server Resource
     // Specify a function which is executed each time the readyState property changes
@@ -726,6 +734,7 @@ function displayUser() {
 //private; remove localStorage objects
 function cleanLocalStorage() {
     localStorage.removeItem('token');
+    localStorage.removeItem('privatekey');
     localStorage.removeItem('toEmail');
     localStorage.removeItem('tab');
 }

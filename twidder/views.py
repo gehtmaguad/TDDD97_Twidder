@@ -87,12 +87,14 @@ def sign_in():
     # Prepend the salt to password
     salted_password = salt + password
     # Hash the salted password
-    m = hashlib.sha256()
-    m.update(salted_password)
-    hashed_password = m.hexdigest()
+    hashed_password = hash_password(salted_password)
 
     # Check if password from form is same as in database
     if (hashed_password == dataset[2]):
+
+      # Create a private key
+      private_key = base64.b64encode(os.urandom(128))
+      private_key = salt.decode("utf-8")
 
       # Check if user is already logged in:
       if (is_logged_in_by_email(email) == True):
@@ -104,12 +106,13 @@ def sign_in():
         # Create session token
         token = token_generator()
         # Create new user object and add it to the list of logged in users 
-        logged_in_users.append({'email':email,'token':token,'sessions':1})
+        logged_in_users.append({'email':email,'token':token,'sessions':1,'privatekey':private_key})
 
       # Pass success data to dictionary
       data['success'] = True
       data['message'] = 'Successfully signed in'
       data['data'] = token
+      data['privatekey'] = private_key
 
       # chartjs: Update Statistics about online users
       count = len(logged_in_users)
@@ -169,15 +172,10 @@ def sign_up():
     # return the dataset as json data
     return json.dumps(data)
 
-  # Create a salt
-  salt = base64.b64encode(os.urandom(128))
-  salt = salt.decode("utf-8")
-  # Prepend the salt to password
-  salted_password = salt + password
-  # Hash the salted password
-  m = hashlib.sha256()
-  m.update(salted_password)
-  hashed_password = m.hexdigest()
+  # Get hashed password and salt
+  hashed_password_and_salt = hash_password_with_random_salt(password)
+  salt = hashed_password_and_salt['salt']
+  hashed_password = hashed_password_and_salt['hashed_password']
 
   # Add User to the database
   database_helper.add_user( \
@@ -194,8 +192,9 @@ def sign_up():
 @app.route('/signout/', methods=['POST'])
 def sign_out():
 
-  # Get token from form
+  # Get token and hashvalue from form
   token = request.json['token']
+  hashvalue = request.json['hashvalue']
 
   # Create empty dictionary for storing return data
   data = {}
@@ -207,31 +206,40 @@ def sign_out():
     user = get_user_by_token(token)
     email = user['email']
     sessionCount = user['sessions']
-    # Check if User has multiple sessions
-    if (sessionCount > 1):
-      # Decrease Session Count
-      decrease_session_count(email)
+    privatekey = user['privatekey']
+
+    # Compare hash values
+    if (hashvalue != hash_data(privatekey + token)):
+      data['success'] = False
+      data['message'] = 'Error in hash value'
     else:
-      # Remove user from logged in users
-      sign_out_user_by_token(token)
+      # Check if User has multiple sessions
+      if (sessionCount > 1):
+        # Decrease Session Count
+        decrease_session_count(email)
+      else:
+        # Remove user from logged in users
+        sign_out_user_by_token(token)
 
-    # Pass success data to dictionary
-    data['success'] = True
-    data['message'] = 'Successfully signed out'
+      # Pass success data to dictionary
+      data['success'] = True
+      data['message'] = 'Successfully signed out'
 
-    # chartjs: Update Statistics about online users
-    count = len(logged_in_users)
-    for logged_in_user in logged_in_users:
-      if ('websocket' in logged_in_user):
-        # Form Data Object
-        data = {}
-        data['success'] = True
-        data['message'] = "OnlineCountChanged"
-        data['data'] = count
-        # Get Websocket and sent data
-        websocket = logged_in_user['websocket']
-        if websocket is not None:
-          websocket.send(json.dumps(data))
+      # chartjs: Update Statistics about online users
+      count = len(logged_in_users)
+      for logged_in_user in logged_in_users:
+        if ('websocket' in logged_in_user):
+          # Form Data Object
+          data = {}
+          data['success'] = True
+          data['message'] = "OnlineCountChanged"
+          data['data'] = count
+          # Get Websocket and sent data
+          websocket = logged_in_user['websocket']
+          if websocket is not None:
+            websocket.send(json.dumps(data))
+
+  # if user is not logged in
   else:
     # Pass error data to dictionary
     data['success'] = False
@@ -266,9 +274,13 @@ def change_password():
     logged_in_user = get_user_by_token(token)
     email = logged_in_user['email']
 
-    # Get Old Password from database
+    # Get current password and salt from database
     result = database_helper.get_user(email)
     db_password = result[2]
+    salt = result[8]
+
+    # Hash old password
+    old_password = hash_password(salt + old_password)
 
     # Validate user input with database data
     if (db_password != old_password):
@@ -279,6 +291,7 @@ def change_password():
       return json.dumps(data)
 
     # Change password
+    new_password = hash_password(salt + new_password)
     database_helper.change_password(email, new_password)
 
     # Pass success data to dictionary
@@ -702,3 +715,33 @@ def get_user_data(email):
     user['city'] = result[6]
     user['country'] = result[7]
     return user
+
+# private, create hashed password with a salt
+def hash_password_with_random_salt(password):
+  data = {}
+  # Create a salt
+  salt = base64.b64encode(os.urandom(128))
+  salt = salt.decode("utf-8")
+  # Prepend the salt to password
+  salted_password = salt + password
+  # Hash the salted password
+  m = hashlib.sha256()
+  m.update(salted_password)
+  hashed_password = m.hexdigest()
+  data['salt'] = salt
+  data['hashed_password'] = hashed_password
+  return data
+
+# private, create hahed password from salted password
+def hash_password(salted_password):
+  m = hashlib.sha256()
+  m.update(salted_password)
+  hashed_password = m.hexdigest()
+  return hashed_password
+
+# private, hash data
+def hash_data(data):
+    m = hashlib.sha256()
+    m.update(data)
+    hashed_data = m.hexdigest()
+    return hashed_data
