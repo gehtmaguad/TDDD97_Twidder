@@ -345,8 +345,6 @@ function resetPassword() {
       if (con.readyState == 4 && con.status == 200) {
         // Parse the JSON response from the server
         var serverResponse = JSON.parse(con.responseText);
-        // TODO: Clear Form if success?
-        // TODO: Clear Error or Success Message when switched away and back to this Tab?
         // Check response status
         if (serverResponse.success === true) {
           document.getElementById('valErrMsgRenewPwdForm').innerHTML = "";
@@ -390,13 +388,11 @@ function injectHomeUserData() {
         var serverResponse = JSON.parse(con.responseText);
         // Check response status
         if (serverResponse.success === true) {
-          // Inject the userdata into html
-          document.getElementById("homeFirstname").innerHTML = serverResponse.data.firstname;
-          document.getElementById("homeFamilyname").innerHTML = serverResponse.data.familyname;
-          document.getElementById("homeGender").innerHTML = serverResponse.data.gender;
-          document.getElementById("homeCity").innerHTML = serverResponse.data.city;
-          document.getElementById("homeCountry").innerHTML = serverResponse.data.country;
-          document.getElementById("homeEmail").innerHTML = serverResponse.data.email;
+          // Create dynamic html using mustache.js library
+          var template = document.getElementById("template").innerHTML;
+          Mustache.parse(template);
+          var rendered = Mustache.render(template, serverResponse.data);
+          document.getElementById("target").innerHTML = rendered;
         } else {
           // inject error message into html
           document.getElementById('valErrMsgHomePostAreaForm').innerHTML = serverResponse.message;
