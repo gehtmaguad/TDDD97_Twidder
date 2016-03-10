@@ -558,12 +558,15 @@ def get_user_messages_by_token(token, hashvalue):
 
     # Get Messages for logged in user and append them to messages dict
     result = database_helper.get_messages(email)
+    count = 0
     for element in result:
       message = {}
       message['sender_email'] = element[1]
       message['receiver_email'] = element[2]
       message['message'] = element[3]
+      message['messageid'] = "getusermessagesbytoken" + str(count)
       messages.append(message)
+      count = count + 1
 
     # Pass success data to dictionary
     data['success'] = True
@@ -609,14 +612,17 @@ def get_user_messages_by_email(token, email, hashvalue):
       data['message'] = 'Error in hash value'
       return json.dumps(data)
 
-
+    # Get Messages for searched user and append them to messages dict
     result = database_helper.get_messages(email)
+    count = 0
     for element in result:
       message = {}
       message['sender_email'] = element[1]
       message['receiver_email'] = element[2]
       message['message'] = element[3]
+      message['messageid'] = "getusermessagesbyemail" + str(count)
       messages.append(message)
+      count = count + 1
 
     # Pass success data to dictionary
     data['success'] = True

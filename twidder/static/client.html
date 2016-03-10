@@ -7,7 +7,7 @@
 		<script src="sha256.js" type="text/javascript"></script>
 		<script src="mustache.js" type="text/javascript"></script>
 		<script src="client.js" type="text/javascript"></script>
-    <script id="template" type="x-tmpl-mustache">
+    <script id="personalInfoTemplate" type="x-tmpl-mustache">
       <div class="personalInfoKey"><p class="noBoarder">Email: </p></div>
       <div class="personalInfoValue"><p class="noBoarder" id="homeEmail">{{email}}</p></div><br>
       <div class="personalInfoKey"><p class="noBoarder">Firstname: </p></div>
@@ -20,6 +20,14 @@
       <div class="personalInfoValue"><p class="noBoarder" id="homeCity">{{city}}</p></div><br>
       <div class="personalInfoKey"><p class="noBoarder">Country: </p></div>
       <div class="personalInfoValue"><p class="noBoarder" id="homeCountry">{{country}}</p></div><br>
+    </script>
+    <script id="messageWallTemplate" type="x-tmpl-mustache">
+      {{#data}}
+      <div style="line-height: 2;">
+        <span>{{sender_email}}:</span>
+        <span id="{{messageid}}" draggable="true" ondragstart="drag(event)">{{message}}</span>
+      </div>
+      {{/data}}
     </script>
     <script type="text/view" id="welcomeView">
             <div id="main_container">
@@ -100,21 +108,7 @@
 					<div id="homePersonalArea">
 						<div id="homePersonalInfo">
 							<h2>Personal Information</h2>
-              <!--
-							<div class="personalInfoKey"><p class="noBoarder">Email: </p></div>
-              <div class="personalInfoValue"><p class="noBoarder" id="homeEmail"></p></div><br>
-							<div class="personalInfoKey"><p class="noBoarder">Firstname: </p></div>
-              <div class="personalInfoValue"><p class="noBoarder" id="homeFirstname"></p></div><br>
-							<div class="personalInfoKey"><p class="noBoarder">Familyname: </p></div>
-              <div class="personalInfoValue"><p class="noBoarder" id="homeFamilyname"></p></div><br>
-							<div class="personalInfoKey"><p class="noBoarder">Gender: </p></div>
-              <div class="personalInfoValue"><p class="noBoarder" id="homeGender"></p></div><br>
-							<div class="personalInfoKey"><p class="noBoarder">City: </p></div>
-              <div class="personalInfoValue"><p class="noBoarder" id="homeCity"></p></div><br>
-							<div class="personalInfoKey"><p class="noBoarder">Country: </p></div>
-              <div class="personalInfoValue"><p class="noBoarder" id="homeCountry"></p></div><br>
-              -->
-              <div id="target">Loading...</div>
+              <div id="homePersonalInfoTarget">Loading...</div>
 						</div>
 					</div>
 					<div id="homePostArea">
@@ -143,8 +137,8 @@
 					</div>
 					<div id="homeMessageArea">
 						<h2>Message Wall</h2>
-						<p>Format is Email: Message. You can use drag and drop functionality to drag a Message and drop it into the Post Textarea.</p>
-						<div id='homeMessageWall'></div>
+						<p>You can drag a Message and drop it into the Post Textarea.</p>
+            <div id="homeMessageWallTarget">Loading...</div>
 					</div>
 				</div>
 				<div id="chartjs">
@@ -178,12 +172,7 @@
 						<div id="browsePersonalArea">
 							<div id="browsePersonalInfo">
 								<h2>Personal Information</h2>
-								<div class="personalInfoKey"><p class="noBoarder">Email: </p></div><div class="personalInfoValue"><p class="noBoarder" id="browseEmail"></p></div><br>
-								<div class="personalInfoKey"><p class="noBoarder">Firstname: </p></div><div class="personalInfoValue"><p class="noBoarder" id="browseFirstname"></p></div><br>
-								<div class="personalInfoKey"><p class="noBoarder">Familyname: </p></div><div class="personalInfoValue"><p class="noBoarder" id="browseFamilyname"></p></div><br>
-								<div class="personalInfoKey"><p class="noBoarder">Gender: </p></div><div class="personalInfoValue"><p class="noBoarder" id="browseGender"></p></div><br>
-								<div class="personalInfoKey"><p class="noBoarder">City: </p></div><div class="personalInfoValue"><p class="noBoarder" id="browseCity"></p></div><br>
-								<div class="personalInfoKey"><p class="noBoarder">Country: </p></div><div class="personalInfoValue"><p class="noBoarder" id="browseCountry"></p></div><br>
+                <div id="browsePersonalInfoTarget">Loading...</div>
 							</div>
 						</div>
 						<div id="browsePostArea">
@@ -208,8 +197,8 @@
 						</div>
 						<div id="browseMessageArea">
 							<h2>Message Wall</h2>
-							<p>Format is Email: Message. You can use drag and drop functionality to drag a Message and drop it into the Post Textarea.</p>
-							<div id='browseMessageWall'></div>
+						  <p>You can drag a Message and drop it into the Post Textarea.</p>
+              <div id="browseMessageWallTarget">Loading...</div>
 						</div>
 					</div>
 				</div>

@@ -389,10 +389,10 @@ function injectHomeUserData() {
         // Check response status
         if (serverResponse.success === true) {
           // Create dynamic html using mustache.js library
-          var template = document.getElementById("template").innerHTML;
+          var template = document.getElementById("personalInfoTemplate").innerHTML;
           Mustache.parse(template);
           var rendered = Mustache.render(template, serverResponse.data);
-          document.getElementById("target").innerHTML = rendered;
+          document.getElementById("homePersonalInfoTarget").innerHTML = rendered;
         } else {
           // inject error message into html
           document.getElementById('valErrMsgHomePostAreaForm').innerHTML = serverResponse.message;
@@ -431,38 +431,11 @@ function injectHomePosts() {
         var serverResponse = JSON.parse(con.responseText);
         // Check response status
         if (serverResponse.success === true) {
-          // Remove current posts from html
-          var element = document.getElementById('homeMessageWall');
-          while (element.firstChild) {
-            element.removeChild(element.firstChild);
-          }
-
-          // Create a count helper variable
-          var count = 0;
-          // Injects retrieved posts into html
-          serverResponse.data.forEach( function (arrayItem)
-          {
-            // Create elements
-            var divElem = document.createElement("div");
-            divElem.style.lineHeight = "2";
-            var spanLeft = document.createElement("span");
-            var spanRight = document.createElement("span");
-            // Prepare para element for drag and drop
-            spanRight.setAttribute("id", "message" + count);
-            spanRight.setAttribute("draggable", "true");
-            spanRight.setAttribute("ondragstart", "drag(event)");
-            // Add text
-            var textLeft = document.createTextNode(arrayItem.sender_email + ": ");
-            var textRight = document.createTextNode(arrayItem.message);
-            spanLeft.appendChild(textLeft);
-            spanRight.appendChild(textRight);
-            // Add these child element to the parent element
-            divElem.appendChild(spanLeft);
-            divElem.appendChild(spanRight);
-            element.appendChild(divElem);
-            // Increment count
-            count++;
-          });
+          // Create dynamic html using mustache.js library
+          var template = document.getElementById("messageWallTemplate").innerHTML;
+          Mustache.parse(template);
+          var rendered = Mustache.render(template, serverResponse);
+          document.getElementById("homeMessageWallTarget").innerHTML = rendered;
         } else {
           document.getElementById('valErrMsgHomePostAreaForm').innerHTML = serverResponse.message;
         }
@@ -502,13 +475,11 @@ function injectBrowseUserData(userdata) {
         var serverResponse = JSON.parse(con.responseText);
         // Check response status
         if (serverResponse.success === true) {
-          // Inject the userdata into html
-          document.getElementById("browseFirstname").innerHTML = serverResponse.data.firstname;
-          document.getElementById("browseFamilyname").innerHTML = serverResponse.data.familyname;
-          document.getElementById("browseGender").innerHTML = serverResponse.data.gender;
-          document.getElementById("browseCity").innerHTML = serverResponse.data.city;
-          document.getElementById("browseCountry").innerHTML = serverResponse.data.country;
-          document.getElementById("browseEmail").innerHTML = serverResponse.data.email;
+          // Create dynamic html using mustache.js library
+          var template = document.getElementById("personalInfoTemplate").innerHTML;
+          Mustache.parse(template);
+          var rendered = Mustache.render(template, serverResponse.data);
+          document.getElementById("browsePersonalInfoTarget").innerHTML = rendered;
         } else {
           document.getElementById('valErrMsgSearchUserForm').innerHTML = "Email " + email + " is unknown";
         }
@@ -549,40 +520,11 @@ function injectBrowsePosts() {
         var serverResponse = JSON.parse(con.responseText);
         // Check response status
         if (serverResponse.success === true) {
-
-          // Remove current posts from html
-          var element = document.getElementById('browseMessageWall');
-          while (element.firstChild) {
-              element.removeChild(element.firstChild);
-          }
-
-          // Create a count helper variable
-          var count = 0;
-          // Injects retrieved posts into html
-          serverResponse.data.forEach( function (arrayItem)
-          {
-            // Create elements
-            var divElem = document.createElement("div");
-            divElem.style.lineHeight = "2";
-            var spanLeft = document.createElement("span");
-            var spanRight = document.createElement("span");
-            // Prepare para element for drag and drop
-            spanRight.setAttribute("id", "message" + count);
-            spanRight.setAttribute("draggable", "true");
-            spanRight.setAttribute("ondragstart", "drag(event)");
-            // Add text
-            var textLeft = document.createTextNode(arrayItem.sender_email + ": ");
-            var textRight = document.createTextNode(arrayItem.message);
-            spanLeft.appendChild(textLeft);
-            spanRight.appendChild(textRight);
-            // Add these child element to the parent element
-            divElem.appendChild(spanLeft);
-            divElem.appendChild(spanRight);
-            element.appendChild(divElem);
-            // Increment count
-            count++;
-          });
-
+          // Create dynamic html using mustache.js library
+          var template = document.getElementById("messageWallTemplate").innerHTML;
+          Mustache.parse(template);
+          var rendered = Mustache.render(template, serverResponse);
+          document.getElementById("browseMessageWallTarget").innerHTML = rendered;
         } else {
           document.getElementById('valErrMsgSearchUserForm').innerHTML = "Could not retrieve posts from " + email;
         }
