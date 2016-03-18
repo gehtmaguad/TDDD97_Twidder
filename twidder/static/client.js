@@ -309,15 +309,20 @@ function resetPassword() {
         return false;
     }
 
+    // Get password form values
+    var oldPassword = document.forms['renewPwdForm']['oldPassword'].value;
+    var newPassword = document.forms['renewPwdForm']['newPassword'].value;
+    var repeatNewPsw = document.forms['renewPwdForm']['repeatNewPsw'].value;
+
     // Create Hash with data and privatekey
     var privatekey = localStorage.getItem("privatekey")
-    var hashvalue = sha256(privatekey + token);
+    var hashvalue = sha256(privatekey + token + oldPassword + newPassword + repeatNewPsw);
 
-    // Get Password Form Values and create javascript object
+    // Create javascript object
     userdata = {
-      oldPassword:document.forms['renewPwdForm']['oldPassword'].value,
-      newPassword:document.forms['renewPwdForm']['newPassword'].value,
-      repeatNewPsw:document.forms['renewPwdForm']['repeatNewPsw'].value,
+      oldPassword:oldPassword,
+      newPassword:newPassword,
+      repeatNewPsw:repeatNewPsw,
       token:token,
       hashvalue:hashvalue
     }
@@ -546,13 +551,13 @@ function postMessageFromHomeTab() {
         return false;
     }
 
-    // Create Hash with data and privatekey
-    var privatekey = localStorage.getItem("privatekey")
-    var hashvalue = sha256(privatekey + token);
-
     // Get Form Value
     var post = document.forms['homePostAreaForm']['post'].value;
     var toEmail = document.forms['homePostAreaForm']['toEmail'].value;
+
+    // Create Hash with data and privatekey
+    var privatekey = localStorage.getItem("privatekey")
+    var hashvalue = sha256(privatekey + token + post + toEmail);
 
     // Create javascript object
     userdata = {
@@ -603,13 +608,13 @@ function postMessageFromBrowseTab() {
         return false;
     }
 
-    // Create Hash with data and privatekey
-    var privatekey = localStorage.getItem("privatekey")
-    var hashvalue = sha256(privatekey + token);
-
     // Get Data
     var post = document.forms['browsePostAreaForm']['post'].value;
     var toEmail = localStorage.getItem('toEmail');
+
+    // Create Hash with data and privatekey
+    var privatekey = localStorage.getItem("privatekey")
+    var hashvalue = sha256(privatekey + token + post + toEmail);
 
     // Create javascript object
     var userdata = {

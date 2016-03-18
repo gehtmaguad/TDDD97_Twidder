@@ -257,6 +257,7 @@ def change_password():
   hashvalue = request.json['hashvalue']
   old_password = request.json['oldPassword']
   new_password = request.json['newPassword']
+  repeatNewPsw = request.json['repeatNewPsw']
 
   # Create empty dictionary for storing return data
   data = {}
@@ -277,7 +278,7 @@ def change_password():
     privatekey = logged_in_user['privatekey']
 
     # Compare hash values
-    if (hashvalue != hash_data(privatekey + token)):
+    if (hashvalue != hash_data(privatekey + token + old_password + new_password + repeatNewPsw)):
       data['success'] = False
       data['message'] = 'Error in hash value'
       return json.dumps(data)
@@ -498,7 +499,7 @@ def post_message():
     privatekey = logged_in_user['privatekey']
 
     # Compare hash values
-    if (hashvalue != hash_data(privatekey + token)):
+    if (hashvalue != hash_data(privatekey + token + message + receiver_email)):
       data['success'] = False
       data['message'] = 'Error in hash value'
       return json.dumps(data)
